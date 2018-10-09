@@ -26,6 +26,7 @@ struct urlList {
 static int countURLs(FILE *given);
 static void readingVert(Graph g, char *url, urlL given, int pos);
 static int findPosUrl(char *url, urlL given);
+static double calcInitPR(urlL given);
 
 /* Get the connections for a given connections.txt */
 urlL getConnections(void) {
@@ -46,7 +47,9 @@ urlL getConnections(void) {
     /* It's assumed no line is larger than 1000 characters */
     char foundArr[1000];
     int i = 0;
+    double setPR = calcInitPR(handle);
     while (fscanf(conn, "%s", foundArr) != EOF) {
+	handle->list[i].pagerank = setPR;
 	handle->list[i].url = strdup(foundArr);
 	i++;
     }
@@ -130,4 +133,10 @@ static int findPosUrl(char *url, urlL given) {
 	i++;
     }
     return i;
+}
+
+/* Generate pagerank for given initial conditions */
+static double calcInitPR(urlL given) {
+    double inPR = 1/(given->nElem);
+    return inPR;
 }

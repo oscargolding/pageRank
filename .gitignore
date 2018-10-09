@@ -52,6 +52,11 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Ignore pagerank
+/pagerank
+# Ignore text files appearing at root
+/*.txt
+
 # Emacs ignore
 # -*- mode: gitignore; -*-
 *~
@@ -98,3 +103,6 @@ flycheck_*.el
 
 # directory configuration
 .dir-locals.el
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*

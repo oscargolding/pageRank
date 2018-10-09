@@ -1,0 +1,14 @@
+#!/bin/sh
+# Shell script to move text files back and forwards for page rank
+
+echo "Enter the name of directory you want to rotate to root: "
+read name
+if [ -d "$name" ];
+then
+    dir=$(pwd)
+    rm -f *.txt
+    cp $name/* $dir/
+    echo "Finished copying new files across"
+else
+    echo "Directory doesn't exist"
+fi

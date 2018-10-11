@@ -29,8 +29,8 @@ struct baseVertex {
     int outGoing;
     int inComing;
     int length;
-    float oldPageRank;
-    float pageRank;
+    double oldPageRank;
+    double pageRank;
     vNode node;
     vNode refs;
 };
@@ -41,10 +41,11 @@ static vNode insertInside(bVertex list, int vertex);
 static vNode insertReference(bVertex list, int vertex);
 
 /* pageRank helper functions */
-static float pageSummation(Graph g, bVertex spec);
-static float weightedInLinks(bVertex j, bVertex i, Graph g);
-static float weightedOutLinks(bVertex j, bVertex i, Graph g);
-static float sumDiff(Graph g, int N);
+static double pageSummation(Graph g, bVertex spec, int pageUsing);
+static double weightedInLinks(bVertex j, bVertex i, Graph g);
+static double weightedOutLinks(bVertex j, bVertex i, Graph g);
+static double sumDiff(Graph g, int N, double *arr);
+static double *updateAll(Graph g, double d, double diffPR, int N);
 
 /* Generate a new graph with vertices, this graph is empty */
 Graph newGraph(int vertices) {
@@ -54,8 +55,8 @@ Graph newGraph(int vertices) {
     g->nE = 0;
     g->connections = malloc(vertices * sizeof(bVertex));
     int i = 0;
-    float conver = (float)vertices;
-    float pVal = 1/conver;
+    double conver = (double)vertices;
+    double pVal = 1/conver;
     /* Appropriate process to create graph */
     while (i < vertices) {
 	g->connections[i] = malloc(sizeof(struct baseVertex));
@@ -141,41 +142,84 @@ void showGraph(Graph g) {
 }
 
 /* Calculate the pageRank of a graph */
-void calculatePageRank(Graph g, urlL list, float d, float diffPR,
+void calculatePageRank(Graph g, urlL list, double d, double diffPR,
 		       int maxIter) {
     /* Need to set-up the algorithm accordingly */
     int iteration = 0;
-    int N = getNoURL(list);
-    float precN = (float)N;
-    float fronTerm = (1-d)/precN;
-    float diff = diffPR;
-    int pageUsing = 0;
-    /* Start the iterations loop */
+    int N = getNoURL(list);    
+    /* double precN = (double)N; */
+    /* double fronTerm = (1-d)/precN; */
+    double diff = diffPR;
+    /* int pageUsing = 2; */
+    /* start the iterations loop */
     while ((iteration < maxIter) && (diff >= diffPR)) {
 	/* Need to get the pageSummation part */
-	float backRef = pageSummation(g, g->connections[pageUsing]);
-	float endTerm = d * backRef;
-	float newPageRank = fronTerm + endTerm;
-	float oldPageRank = g->connections[pageUsing]->pageRank;
-	g->connections[pageUsing]->oldPageRank = oldPageRank;
-	g->connections[pageUsing]->pageRank = newPageRank;
-	diff = sumDiff(g, N); if (diff < diffPR) break; 
+	/* double backRef = pageSummation(g, g->connections[pageUsing], pageUsing); */
+	/* double endTerm = d * backRef; */
+	/* double newPageRank = fronTerm + endTerm; */
+	/* double oldPageRank = g->connections[pageUsing]->pageRank; */
+	/* g->connections[pageUsing]->oldPageRank = oldPageRank; */
+	/* g->connections[pageUsing]->pageRank = newPageRank; */
+	double *ret = updateAll(g, d, diffPR, N);
+	/* if (iteration > 0) { */
+	diff = sumDiff(g, N, ret); /* if (diff < diffPR) break; */
+	/* } */
+	/* pageUsing = (pageUsing == N-1) ? 0 : pageUsing + 1; */
 	iteration++;
-	pageUsing = (pageUsing == N-1) ? 0 : (pageUsing + 1);
     }    
     return;
 }
 
-/* Sum the difference between two graph points */
-static float sumDiff(Graph g, int N) {
+static double *updateAll(Graph g, double d, double diffPR, int N) {
     int i = 0;
-    float sum = 0;
+    double precN = (double)N;
+    double fronTerm = (1-d)/precN;
+    /* int arr[] = {2,1,0,3,4,5,6}; */
+    double arr[N];
+    double *ret = malloc(N*sizeof(double));
     while (i < N) {
-	float res = fabs(g->connections[i]->pageRank -
-			 g->connections[i]->oldPageRank);
-	if (res < 0) {
-	    res = -res;
-	}
+	ret[i] = g->connections[i]->pageRank;
+	i++;
+    }
+    i = 0;
+    while (i < N) {	
+	double backRef = pageSummation(g, g->connections[i], i);
+	double endTerm = d*backRef;
+	double newPageRank = fronTerm + endTerm;
+	arr[i] = newPageRank;
+	/* double oldPageRank = g->connections[arr[i]]->pageRank; */
+	/* g->connections[arr[i]]->oldPageRank = oldPageRank; */
+	/* g->connections[arr[i]]->pageRank = newPageRank; */
+	i++;
+    }
+    i = 0;
+    while (i < N) {
+	g->connections[i]->pageRank = arr[i];
+	i++;
+    }
+    /* i = 3; */
+    /* while (i < N) { */
+    /* 	double backRef = pageSummation(g, g->connections[i], i); */
+    /* 	double endTerm = d*backRef; */
+    /* 	double newPageRank = fronTerm + endTerm; */
+    /* 	double oldPageRank = g->connections[i]->pageRank; */
+    /* 	g->connections[i]->oldPageRank = oldPageRank; */
+    /* 	g->connections[i]->pageRank = newPageRank; */
+    /* 	i++; */
+    /* } */
+    return ret;
+}
+
+/* Sum the difference between two graph points */
+static double sumDiff(Graph g, int N, double *arr) {
+    int i = 0;
+    double sum = 0;
+    while (i < N) {
+	double res = fabs(g->connections[i]->pageRank -
+			 arr[i]);
+	/* if (res < 0) { */
+	/*     res = -res; */
+	/* } */
 	sum += res;
 	i++;	
     }
@@ -183,18 +227,19 @@ static float sumDiff(Graph g, int N) {
 }
 
 /* Helper function that assists in counting pageSummation */
-static float pageSummation(Graph g, bVertex spec) {
+static double pageSummation(Graph g, bVertex spec, int pageUsing) {
     /* Set the reference nodes */
     vNode refCurr = spec->refs;
     /* Set a default value for the summation */
-    float defaultSum = 0;
+    double defaultSum = 0;
     while (refCurr != NULL) {
-	float pageRankRef = g->connections[refCurr->vertex]->pageRank;
-	float weightIn = weightedInLinks(g->connections[refCurr->vertex], spec,
+	double pageRankRef = g->connections[refCurr->vertex]->pageRank;
+	double weightIn = weightedInLinks(g->connections[refCurr->vertex], spec,
 					  g);
-	float weightOut = weightedOutLinks(g->connections[refCurr->vertex],
+	double weightOut = weightedOutLinks(g->connections[refCurr->vertex],
 					    spec, g);
-	float mult = (pageRankRef * weightIn * weightOut);
+	double mult = (pageRankRef * weightIn * weightOut);
+	printf("The WIN[%d,%d] is %.7lf and WOUT is %.7lf\n", refCurr->vertex, pageUsing, weightIn, weightOut);
 	defaultSum += mult;
 	refCurr = refCurr->next;
     }
@@ -202,46 +247,46 @@ static float pageSummation(Graph g, bVertex spec) {
 }
 
 /* Helper to find the weighted inLinks */
-static float weightedInLinks(bVertex j, bVertex i, Graph g) {
+static double weightedInLinks(bVertex j, bVertex i, Graph g) {
     /* Getting the top term to use for algorithm */
     int inLinkI = i->inComing;
     /* if (inLinkI == 0) return 0.0; */
     /* Start getting the outgoing from vertex j */
     vNode current = j->node;
-    float sum = 0;
+    double sum = 0;
     while (current != NULL) {
 	sum += g->connections[current->vertex]->inComing;
 	current = current->next;
     }
-    float conTop = (float)inLinkI;
-    float conBot = sum;
-    float res = conTop/conBot;
+    double conTop = (double)inLinkI;
+    double conBot = sum;
+    double res = conTop/conBot;
     return res;
 }
 
 /* Helper to find the weighted outLinks */
-static float weightedOutLinks(bVertex j, bVertex i, Graph g) {
+static double weightedOutLinks(bVertex j, bVertex i, Graph g) {
     /* Getting the top term to use for algorithm */
     int outLinkI = i->outGoing;
     /* Start getting the outgoing from vertex j */
     vNode current = j->node;
-    float sum = 0;
+    double sum = 0;
     while (current != NULL) {
-	float val = (float)g->connections[current->vertex]->outGoing;
+	double val = (double)g->connections[current->vertex]->outGoing;
 	if (val == 0) {
 	    val = 0.5;
 	}
 	sum += val;
 	current = current->next;
     }
-    float conTop = (float)outLinkI;
+    double conTop = (double)outLinkI;
     if (conTop == 0) {
 	conTop = 0.5;
     }
-    float conBot = sum;
+    double conBot = sum;
     if (conBot == 0) {
 	conBot = 0.5;	
     }
-    float res = conTop/conBot;
+    double res = conTop/conBot;
     return res;
 }

@@ -18,6 +18,6 @@ void addConnection(Graph g, int start, int end);
 void showGraph(Graph g);
 
 /* Calculate pageRank function on graph */
-void calculatePageRank(Graph g, urlL list, float d, float diffPR,
+void calculatePageRank(Graph g, urlL list, double d, double diffPR,
 		       int maxIter);
 #endif 

@@ -11,8 +11,8 @@ int main (int argc, char *argv[]) {
 	fprintf(stderr, "Program requires three arguments\n");
 	exit(1);
     }
-    float d = strtod(argv[1], NULL);
-    float diffPR = strtod(argv[2], NULL);
+    double d = strtod(argv[1], NULL);
+    double diffPR = strtod(argv[2], NULL);
     int maxIter = strtol(argv[3], NULL, 10);
     printf("The d:%lf, diffPR:%lf, maxIter:%d\n", d, diffPR, maxIter);
     urlL getList = getConnections();

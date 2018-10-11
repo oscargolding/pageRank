@@ -21,11 +21,15 @@ char *getURL(urlL given);
 int getNoURL(urlL given);
 
 /* Insert a pagerank at a given position and outgoing links */
-void insertPagerank(float pagerank, int pos, int outgoing);
+void insertPagerank(double pagerank, int pos, int outgoing, urlL given);
 
 /* Return the URL at a given position, return NULL if out of bounds */
 char *returnURL(int pos, urlL given);
 
+/* Sort the buffer on pageRanks */
+void sort(urlL given);
+
 /* Get the graph structures from underlying files */
 Graph getGraph(urlL given);
+
 #endif

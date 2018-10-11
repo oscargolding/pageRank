@@ -1,6 +1,19 @@
 /* Reading data from file and populating to create a list */
 
-/* Have to define GNU compliant extra functions */
+/***
+ *      ____                _       _             _       _ _   
+ *     |  _ \ ___  __ _  __| | __ _| |_ __ _     / \   __| | |_ 
+ *     | |_) / _ \/ _` |/ _` |/ _` | __/ _` |   / _ \ / _` | __|
+ *     |  _ <  __/ (_| | (_| | (_| | || (_| |  / ___ \ (_| | |_ 
+ *     |_| \_\___|\__,_|\__,_|\__,_|\__\__,_| /_/   \_\__,_|\__|
+ *                                                              
+ */
+/* Have to define GNU compliant extra functions 
+ * Create a URL List using an array implementation
+ * Arrays allows for perfect mapping with a graph
+ * O(1) interation with graph ADT
+*/
+
 #define _GNU_SOURCE 1
 
 #include <stdio.h>
@@ -13,8 +26,8 @@ typedef struct urlNode *Node;
 
 typedef struct urlNode {
     char *url;
-    float pagerank;
-    float diff;
+    double pagerank;
+    int outDegree;
 } urlNode;
 
 /* Create an overview struct with information */
@@ -23,10 +36,17 @@ struct urlList {
     Node list;
 } urlList;
 
+/* Helper functions for dealing with the URL List ADT */
 static int countURLs(FILE *given);
 static void readingVert(Graph g, char *url, urlL given, int pos);
 static int findPosUrl(char *url, urlL given);
 static double calcInitPR(urlL given);
+
+/* Helper functions to assist in merging */
+static void mergeSort(Node list, int lo, int hi);
+static void merge(Node list, int lo, int mid, int hi);
+static int less(double x, double y);
+static void copy(Node a, int *i, Node b, int *j);
 
 /* Get the connections for a given connections.txt */
 urlL getConnections(void) {
@@ -139,4 +159,61 @@ static int findPosUrl(char *url, urlL given) {
 static double calcInitPR(urlL given) {
     double inPR = 1/(given->nElem);
     return inPR;
+}
+
+/* Insert a pageRank into list and out degrees of vertex */
+void insertPagerank(double pagerank, int pos, int outgoing, urlL given) {
+    /* Do access and insertions */
+    given->list[pos].pagerank = pagerank;
+    given->list[pos].outDegree = outgoing;   
+}
+
+/* Sort the given url list */
+void sort(urlL given) {
+    int lo = 0;
+    int hi = given->nElem - 1;
+    mergeSort(given->list, lo, hi);
+}
+
+/* Performing mergeSort on buffer */
+static void mergeSort(Node list, int lo, int hi) {
+    int mid = (lo+hi)/2; 
+    if (hi <= lo) return;
+    mergeSort(list, lo, mid);
+    mergeSort(list, mid+1, hi);
+    merge(list, lo, mid, hi);
+}
+
+/* Helper function for merging the two */
+static void merge(Node list, int lo, int mid, int hi) {
+    int  i, j, k, nitems = hi-lo+1;
+    Node tmp = malloc(nitems*sizeof(urlNode));
+
+    i = lo; j = mid+1; k = 0;
+    while (i <= mid && j <= hi) {
+	if (less(list[i].pagerank,list[j].pagerank))
+	    copy(tmp, &k, list, &i);
+	else
+	    copy(tmp, &k, list, &j);
+    }
+    while (i <= mid) copy(tmp, &k, list, &i);
+    while (j <= hi) copy(tmp, &k, list, &j);
+
+    //copy back
+    for (i = lo, k = 0; i <= hi; i++, k++) {
+	list[i] = tmp[k];
+    }
+    free(tmp);
+}
+
+/* Helper function to simplify check on less */
+static int less(double x, double y) {
+    return (x < y);
+}
+
+/* Helper function to do copying */
+static void copy(Node a, int *i, Node b, int *j) {
+    a[*i] = b[*j];
+    *i = *i + 1;
+    *j = *j + 1;
 }

@@ -1,4 +1,17 @@
-/* Implementation of the Graph ADT */
+/* 
+ ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗     █████╗ ██████╗ ████████╗
+██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║    ██╔══██╗██╔══██╗╚══██╔══╝
+██║  ███╗██████╔╝███████║██████╔╝███████║    ███████║██║  ██║   ██║   
+██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║    ██╔══██║██║  ██║   ██║   
+╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║    ██║  ██║██████╔╝   ██║   
+ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝    ╚═╝  ╚═╝╚═════╝    ╚═╝
+ */
+/* Implementation of the Graph ADT 
+ * Requires a clear mapping between a list and graph
+ * Functionality coupled with readdata.h ADT to ensure clean transferal
+ of urls to nodes.
+*/
+
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -25,6 +38,7 @@ struct graphRep {
     bVertex *connections;
 };
 
+/* Structure that persists aggregate information on vertices in graph */
 struct baseVertex {
     int outGoing;
     int inComing;
@@ -46,6 +60,7 @@ static double weightedInLinks(bVertex j, bVertex i, Graph g);
 static double weightedOutLinks(bVertex j, bVertex i, Graph g);
 static double sumDiff(Graph g, int N, double *arr);
 static double *updateAll(Graph g, double d, double diffPR, int N);
+static void persistRanks(urlL list, Graph g);
 
 /* Generate a new graph with vertices, this graph is empty */
 Graph newGraph(int vertices) {
@@ -147,34 +162,25 @@ void calculatePageRank(Graph g, urlL list, double d, double diffPR,
     /* Need to set-up the algorithm accordingly */
     int iteration = 0;
     int N = getNoURL(list);    
-    /* double precN = (double)N; */
-    /* double fronTerm = (1-d)/precN; */
     double diff = diffPR;
-    /* int pageUsing = 2; */
     /* start the iterations loop */
     while ((iteration < maxIter) && (diff >= diffPR)) {
 	/* Need to get the pageSummation part */
-	/* double backRef = pageSummation(g, g->connections[pageUsing], pageUsing); */
-	/* double endTerm = d * backRef; */
-	/* double newPageRank = fronTerm + endTerm; */
-	/* double oldPageRank = g->connections[pageUsing]->pageRank; */
-	/* g->connections[pageUsing]->oldPageRank = oldPageRank; */
-	/* g->connections[pageUsing]->pageRank = newPageRank; */
 	double *ret = updateAll(g, d, diffPR, N);
-	/* if (iteration > 0) { */
-	diff = sumDiff(g, N, ret); /* if (diff < diffPR) break; */
-	/* } */
-	/* pageUsing = (pageUsing == N-1) ? 0 : pageUsing + 1; */
+	diff = sumDiff(g, N, ret); 
 	iteration++;
-    }    
+    }
+    persistRanks(list, g);
     return;
 }
 
+/* Function that computes simulatenous updating across all vertices that are
+present. This is required since the algorithm uses a general p(i) index, 
+indicating all page ranks must be updated in the same iteration. */
 static double *updateAll(Graph g, double d, double diffPR, int N) {
     int i = 0;
     double precN = (double)N;
     double fronTerm = (1-d)/precN;
-    /* int arr[] = {2,1,0,3,4,5,6}; */
     double arr[N];
     double *ret = malloc(N*sizeof(double));
     while (i < N) {
@@ -182,14 +188,12 @@ static double *updateAll(Graph g, double d, double diffPR, int N) {
 	i++;
     }
     i = 0;
+    /* Can't change the pageRank immediately, must wait for all pages */
     while (i < N) {	
 	double backRef = pageSummation(g, g->connections[i], i);
 	double endTerm = d*backRef;
 	double newPageRank = fronTerm + endTerm;
 	arr[i] = newPageRank;
-	/* double oldPageRank = g->connections[arr[i]]->pageRank; */
-	/* g->connections[arr[i]]->oldPageRank = oldPageRank; */
-	/* g->connections[arr[i]]->pageRank = newPageRank; */
 	i++;
     }
     i = 0;
@@ -197,16 +201,6 @@ static double *updateAll(Graph g, double d, double diffPR, int N) {
 	g->connections[i]->pageRank = arr[i];
 	i++;
     }
-    /* i = 3; */
-    /* while (i < N) { */
-    /* 	double backRef = pageSummation(g, g->connections[i], i); */
-    /* 	double endTerm = d*backRef; */
-    /* 	double newPageRank = fronTerm + endTerm; */
-    /* 	double oldPageRank = g->connections[i]->pageRank; */
-    /* 	g->connections[i]->oldPageRank = oldPageRank; */
-    /* 	g->connections[i]->pageRank = newPageRank; */
-    /* 	i++; */
-    /* } */
     return ret;
 }
 
@@ -217,9 +211,6 @@ static double sumDiff(Graph g, int N, double *arr) {
     while (i < N) {
 	double res = fabs(g->connections[i]->pageRank -
 			 arr[i]);
-	/* if (res < 0) { */
-	/*     res = -res; */
-	/* } */
 	sum += res;
 	i++;	
     }
@@ -239,7 +230,6 @@ static double pageSummation(Graph g, bVertex spec, int pageUsing) {
 	double weightOut = weightedOutLinks(g->connections[refCurr->vertex],
 					    spec, g);
 	double mult = (pageRankRef * weightIn * weightOut);
-	printf("The WIN[%d,%d] is %.7lf and WOUT is %.7lf\n", refCurr->vertex, pageUsing, weightIn, weightOut);
 	defaultSum += mult;
 	refCurr = refCurr->next;
     }
@@ -250,7 +240,6 @@ static double pageSummation(Graph g, bVertex spec, int pageUsing) {
 static double weightedInLinks(bVertex j, bVertex i, Graph g) {
     /* Getting the top term to use for algorithm */
     int inLinkI = i->inComing;
-    /* if (inLinkI == 0) return 0.0; */
     /* Start getting the outgoing from vertex j */
     vNode current = j->node;
     double sum = 0;
@@ -289,4 +278,15 @@ static double weightedOutLinks(bVertex j, bVertex i, Graph g) {
     }
     double res = conTop/conBot;
     return res;
+}
+
+/* Helper function to persist calculate pageRanks */
+static void persistRanks(urlL list, Graph g) {
+    int i = 0;
+    while (i < g->nV) {
+	insertPagerank(g->connections[i]->pageRank, i,
+		       g->connections[i]->outGoing, list);
+	i++;
+    }
+    return;
 }

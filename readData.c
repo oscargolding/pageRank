@@ -12,6 +12,7 @@
  * Create a URL List using an array implementation
  * Arrays allows for perfect mapping with a graph
  * O(1) interation with graph ADT
+ * Sorting is guaranteed to be O(n*log(n)) -> done on pageRank
 */
 
 #define _GNU_SOURCE 1
@@ -45,7 +46,7 @@ static double calcInitPR(urlL given);
 /* Helper functions to assist in merging */
 static void mergeSort(Node list, int lo, int hi);
 static void merge(Node list, int lo, int mid, int hi);
-static int less(double x, double y);
+static int more(double x, double y);
 static void copy(Node a, int *i, Node b, int *j);
 
 /* Get the connections for a given connections.txt */
@@ -176,6 +177,8 @@ void sort(urlL given) {
 }
 
 /* Performing mergeSort on buffer */
+/* Mergsort and helper functions adapted for our ADT from 2521 lecture sorting
+ examples */
 static void mergeSort(Node list, int lo, int hi) {
     int mid = (lo+hi)/2; 
     if (hi <= lo) return;
@@ -191,7 +194,7 @@ static void merge(Node list, int lo, int mid, int hi) {
 
     i = lo; j = mid+1; k = 0;
     while (i <= mid && j <= hi) {
-	if (less(list[i].pagerank,list[j].pagerank))
+	if (more(list[i].pagerank,list[j].pagerank))
 	    copy(tmp, &k, list, &i);
 	else
 	    copy(tmp, &k, list, &j);
@@ -199,7 +202,7 @@ static void merge(Node list, int lo, int mid, int hi) {
     while (i <= mid) copy(tmp, &k, list, &i);
     while (j <= hi) copy(tmp, &k, list, &j);
 
-    //copy back
+    /* Copy back from the temp array */
     for (i = lo, k = 0; i <= hi; i++, k++) {
 	list[i] = tmp[k];
     }
@@ -207,8 +210,8 @@ static void merge(Node list, int lo, int mid, int hi) {
 }
 
 /* Helper function to simplify check on less */
-static int less(double x, double y) {
-    return (x < y);
+static int more(double x, double y) {
+    return (x > y);
 }
 
 /* Helper function to do copying */
@@ -216,4 +219,26 @@ static void copy(Node a, int *i, Node b, int *j) {
     a[*i] = b[*j];
     *i = *i + 1;
     *j = *j + 1;
+}
+
+/* Display the given urlLlist */
+void displayList(urlL given) {
+    int i = 0;
+    while (i < given->nElem) {
+	printf("Pagerank: %.7lf, Outlinks: %d\n", given->list[i].pagerank,
+	       given->list[i].outDegree);
+	i++;
+    }
+}
+
+/* Write the pageRanks to file */
+void writeToFile(urlL given) {
+    FILE *fptr = fopen("pagerankList.txt", "w");
+    int i = 0;
+    while (i < given->nElem) {
+	fprintf(fptr, "%s, %d, %.7f\n", given->list[i].url,
+		given->list[i].outDegree, given->list[i].pagerank);
+	i++;
+    }
+    fclose(fptr);
 }

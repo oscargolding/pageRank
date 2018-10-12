@@ -32,4 +32,10 @@ void sort(urlL given);
 /* Get the graph structures from underlying files */
 Graph getGraph(urlL given);
 
+/* Display list */
+void displayList(urlL given);
+
+/* Write pageranks to file */
+void writeToFile(urlL given);
+
 #endif

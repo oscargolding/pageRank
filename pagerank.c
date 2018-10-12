@@ -21,5 +21,8 @@ int main (int argc, char *argv[]) {
     showGraph(g);
     calculatePageRank(g, getList, d, diffPR, maxIter);
     showGraph(g);
+    sort(getList);
+    displayList(getList);
+    writeToFile(getList);
     return EXIT_SUCCESS;
 }

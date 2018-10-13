@@ -54,6 +54,8 @@ dkms.conf
 
 # Ignore pagerank
 /pagerank
+# Ignore inverted
+/inverted
 # Ignore text files appearing at root
 /*.txt
 

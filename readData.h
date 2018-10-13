@@ -7,8 +7,6 @@
 /* Define a list ADT to use to hold urLs in the file*/
 typedef struct urlList *urlL;
 
-#include "graph.h"
-
 /* Populate the URL interface with connections in PWD on contents of 
 the connections.txt file */ 
 urlL getConnections(void);
@@ -29,13 +27,12 @@ char *returnURL(int pos, urlL given);
 /* Sort the buffer on pageRanks */
 void sort(urlL given);
 
-/* Get the graph structures from underlying files */
-Graph getGraph(urlL given);
-
 /* Display list */
 void displayList(urlL given);
 
 /* Write pageranks to file */
 void writeToFile(urlL given);
 
+/* Given a URL, find the corresponding outgoing position in list */
+int findPosUrl(char *url, urlL given);
 #endif

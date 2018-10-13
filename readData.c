@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "readData.h"
 
 /* Want to create a Node to hold the crucial information for urls */
@@ -39,8 +40,6 @@ struct urlList {
 
 /* Helper functions for dealing with the URL List ADT */
 static int countURLs(FILE *given);
-static void readingVert(Graph g, char *url, urlL given, int pos);
-static int findPosUrl(char *url, urlL given);
 static double calcInitPR(urlL given);
 
 /* Helper functions to assist in merging */
@@ -100,51 +99,8 @@ int getNoURL(urlL given) {
     return given->nElem;
 }
 
-/* This returns a graph structure needed */
-Graph getGraph(urlL given) {
-    int nVert = getNoURL(given);
-    /* Generate the graph */
-    Graph g = newGraph(nVert);
-    int i = 0;
-    while (i < nVert) {
-	char *url = returnURL(i, given);
-	readingVert(g, url, given, i);
-	i++;
-    }
-    return g;
-}
-
-/* Function to assist in graph population */
-static void readingVert(Graph g, char *url, urlL given, int pos) {
-    /* Create needed file extension */
-    char txt[5] = ".txt";
-    char reading[1000];
-    reading[0] = '\0';
-    strcat(reading, url);
-    strcat(reading, txt);
-    /* Don't want some lines to do with formatting */
-    char *ignore0 = "#start";
-    char *ignore1 = "Section-1";
-    char *ignore2 = "#end";
-    char result[1000];
-    FILE *start = fopen(reading, "r");
-    if (start == NULL) perror("Can't open file\n");
-    fseek(start, 0, SEEK_SET);
-    while (fscanf(start, "%s", result) != EOF) {
-	if ((strcmp(result, ignore0) == 0) || strcmp(result, ignore1) == 0) {
-	    /* Ignore the headers */
-	    continue;
-	} else if (strcmp(result, ignore2) == 0) {
-	    /* This is the end of outgoing links */
-	    break;
-	}
-	int loc = findPosUrl(result, given);
-	addConnection(g, pos, loc);
-    }
-}
-
 /* Given a URL, find the corresponding outgoing position in list */
-static int findPosUrl(char *url, urlL given) {
+int findPosUrl(char *url, urlL given) {
     int end = getNoURL(given);
     int i = 0;
     while (i < end) {

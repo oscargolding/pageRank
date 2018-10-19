@@ -36,3 +36,9 @@ void writeToFile(urlL given);
 /* Given a URL, find the corresponding outgoing position in list */
 int findPosUrl(char *url, urlL given);
 #endif
+
+/* Find matching URLs */
+void findMatchedURLs(char **list, int no);
+
+/* Add pageRanks from file */
+void addPageRanks(urlL given);

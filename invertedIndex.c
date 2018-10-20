@@ -33,6 +33,8 @@ typedef struct Node {
     /* Key */
     char *word;
     /* List with all urls holding key */
+    int frequency; //Used for findMatchedURLs instad of storing data in array
+    double pagerank; //Used for findMatchedURLs when adding pageRank
     list colUrls;
     Tree left;
     Tree right;
@@ -63,7 +65,8 @@ static Tree newSet(char *url, char *word) {
     handle->word = holding;
     handle->colUrls = createNode(url, NULL);
     handle->left = NULL;
-    handle->right = NULL;    
+    handle->right = NULL;
+    handle->frequency = 1;    
     return handle;
 }
 
@@ -134,6 +137,7 @@ Tree insertSet(Tree given, char *word, char *url) {
     if (strcmp(word, given->word) == 0) {
 	/* Want to append to the list (assume ordered) */
 	given->colUrls = appendOrdered(given->colUrls, url);
+    given->frequency++;
 	return given;
     }
     if (strcmp(word, given->word) < 0) {
@@ -159,7 +163,7 @@ Tree insertSet(Tree given, char *word, char *url) {
 
 /* Function to write a tree out to a file */
 void writeInverted(Tree given) {
-    FILE *fptr = fopen("invertedIndexTest.txt", "w");
+    FILE *fptr = fopen("invertedIndex.txt", "w");
     assert(given != NULL);
     infixOrder(given, fptr);
     fclose(fptr);
@@ -190,6 +194,35 @@ static void printUrls(list given, FILE *fptr) {
 	}
 	printUrls(given->next, fptr);
     }
+}
+
+int isInTree(Tree given, char* word) {
+    if(given == NULL) return 0;
+    // printf("Comparing: %s and %s\n", given->word, word);
+    if (strcmp(given->word, word) == 0) {
+        // printf("Found a match\n");
+        return 1;
+    }
+    int sum = isInTree(given->left, word) + isInTree(given->right, word);
+    return sum;
+}
+
+int updatePageRank(Tree given, char* word, double pagerank) {
+    if(given == NULL) return 0;
+    if (strcmp(given->word, word) == 0) {
+        given->pagerank = pagerank;
+        return 1;
+    }
+    int sum = updatePageRank(given->left, word, pagerank) + updatePageRank(given->right, word, pagerank);
+    return sum;
+}
+
+void printPageRank(Tree given) {
+    if(given == NULL) return;
+    printPageRank(given->left);
+    printf("%s: %lf\n", given->word, given->pagerank);
+    printPageRank(given->right);
+    return;
 }
 
 /* Want to ensure that the Tree is height balanced */

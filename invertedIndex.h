@@ -14,6 +14,16 @@ Tree createSet();
 /* Write a tree out to a file */
 void writeInverted(Tree given);
 
+/*checks whether a word is in a tree*/
+int isInTree(Tree given, char* word);
+
+/*Updates the page rank of a URL into tree*/
+int updatePageRank(Tree given, char* word, double pagerank);
+
+/* prints the page rank from the AVL tree, just for testing should be
+removed for release */
+void printPageRank(Tree given);
+
 /* Sanity check to ensure AVL properties of set */
 void sanityCheck(Tree given);
 

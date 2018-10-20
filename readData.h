@@ -4,6 +4,8 @@
 #ifndef READDATA_H
 #define READDATA_H
 
+#include "invertedIndex.h" //Need to include so that the datatype Tree is recognised
+
 /* Define a list ADT to use to hold urLs in the file*/
 typedef struct urlList *urlL;
 
@@ -41,4 +43,4 @@ int findPosUrl(char *url, urlL given);
 void findMatchedURLs(char **list, int no);
 
 /* Add pageRanks from file */
-void addPageRanks(urlL given);
+void addPageRanks(Tree given);

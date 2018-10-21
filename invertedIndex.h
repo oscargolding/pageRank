@@ -24,6 +24,9 @@ int updatePageRank(Tree given, char* word, double pagerank);
 removed for release */
 void printPageRank(Tree given);
 
+/* Add pageRanks from file */
+void addPageRanks(Tree given);
+
 /* Sanity check to ensure AVL properties of set */
 void sanityCheck(Tree given);
 

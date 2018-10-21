@@ -225,6 +225,41 @@ void printPageRank(Tree given) {
     return;
 }
 
+/*Function to add pageRanks from file to AVL tree */
+void addPageRanks(Tree given) {
+    FILE *gotten = fopen("pagerankList.txt", "r");
+    assert(gotten != NULL);
+    char foundArr[1000];
+    char holding[1000];
+    holding[0] = '\0';
+    int i = 0;
+    int hit = 0;
+
+    while (fscanf(gotten, "%s", foundArr) != EOF) {
+        if(i % 3 == 0) {
+            int len = strlen(foundArr);
+            foundArr[len-1] = '\0';
+            if(isInTree(given,foundArr) == 1) {
+                // printf("foundArr is: %s\n", foundArr);
+                hit = 1;
+                strcpy(holding, foundArr);
+            }
+        }
+        if(i % 3 == 2 && hit == 1) {
+            int len = strlen(foundArr);
+            foundArr[len-1] = '\0';
+            double pageRank = strtod(foundArr, NULL);
+            if(updatePageRank(given, holding, pageRank) == 0) {
+                printf("Failed to update page rank (readData.c:343)\n");
+            }
+            hit = 0;
+            holding[0] = '\0';
+        } 
+        i++;
+    }
+    printPageRank(given);
+}
+
 /* Want to ensure that the Tree is height balanced */
 void sanityCheck(Tree given) {
     printf("The RHS: %d\n", treeHeight(given->right));

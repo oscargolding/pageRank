@@ -1,8 +1,10 @@
 CC=gcc
-CFLAGS=-Wall -lm -std=c11 -gdwarf-2
+CFLAGS=-Wall -std=c11 -gdwarf-2
+LDFLAGS=-lm
 OBJS=pagerank.o readData.o graph.o
 OBJS1=inverted.o readData.o invertedIndex.o
 OBJS2=searchPageRank.o readData.o
+OBJS3=searchTfIdf.o tfIdf.o
 
 pagerank : $(OBJS)
 	$(CC) -o pagerank $(OBJS)
@@ -24,5 +26,11 @@ searchPageRank : $(OBJS2)
 searchPageRank.o : searchPageRank.c readData.h
 readData.o : readData.c readData.h
 
+searchTfIdf : $(OBJS3)
+	$(CC) -o searchTfIdf $(OBJS3) $(LDFLAGS)
+
+searchTfIdf.o : searchTfIdf.c tfIdf.h
+tfIdf.o : tfIdf.c tfIdf.h
+
 clean :
-	rm -f searchPageRank inverted pagerank *.o 
+	rm -f searchPageRank inverted searchTfIdf pagerank *.o 

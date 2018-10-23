@@ -58,6 +58,8 @@ dkms.conf
 /inverted
 # Ignore search
 /searchPageRank
+# Ignore scaledFootrule
+/scaledFootrule
 # Ignore text files appearing at root
 /*.txt
 

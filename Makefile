@@ -5,6 +5,7 @@ OBJS=pagerank.o readData.o graph.o
 OBJS1=inverted.o readData.o invertedIndex.o
 OBJS2=searchPageRank.o readData.o
 OBJS3=searchTfIdf.o tfIdf.o
+OBJS4=scaledFootrule.o
 
 pagerank : $(OBJS)
 	$(CC) -o pagerank $(OBJS)
@@ -32,5 +33,10 @@ searchTfIdf : $(OBJS3)
 searchTfIdf.o : searchTfIdf.c tfIdf.h
 tfIdf.o : tfIdf.c tfIdf.h
 
+scaledFootrule : $(OBJS4)
+	$(CC) -o scaledFootrule $(OBJS4) $(LDFLAGS)
+
+scaledFootrule.o : scaledFootrule.h scaledFootrule.c 
+
 clean :
-	rm -f searchPageRank inverted searchTfIdf pagerank *.o 
+	rm -f searchPageRank inverted searchTfIdf pagerank scaledFootrule *.o 

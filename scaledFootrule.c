@@ -19,6 +19,7 @@ static void printInFix(urlTree given);
 static urlTree rotateRight(urlTree n1);
 static urlTree rotateLeft(urlTree n1);
 static int treeDepth(urlTree given);
+static int countNodeInAVLTree(urlTree given);
 // static void printLL(urlNode given);
 
 struct listHeader {
@@ -100,6 +101,7 @@ int main (int argc, char *argv[]) {
         }
         currFile = currFile->next;
     }
+    printf("Num of distinct URLs is: %d\n", countNodeInAVLTree(unionOfURLs));
     printInFix(unionOfURLs);
     return EXIT_SUCCESS;
 }
@@ -140,6 +142,10 @@ urlListHeader createURLlist(FILE* rankFile) {
     return urlList;
 }
 
+static int countNodeInAVLTree(urlTree given) {
+    if (given == NULL) return 0;
+    return countNodeInAVLTree(given->left) + countNodeInAVLTree(given->right) + 1;
+}
 
 //Insert into tree
 urlTree insertURL (char* url, urlTree given) {

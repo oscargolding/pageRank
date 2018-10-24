@@ -62,7 +62,7 @@ int main (int argc, char *argv[]) {
     printf("Best footrule is %f\n", currentBestFootRule);
     printf("In the order: \n");
     printArray(currentBestOrder, numOfDistinctURLs);
-    
+
 
 
     return EXIT_SUCCESS;
@@ -129,9 +129,9 @@ double calculateFootRule(char ** anOrder, int lengthOfAnOrder, char** originalOr
         int j = 0;
         double numOfUrlsInOriginalOrder = numOfUrls(originalOrder[i]);
         while(originalOrder[i][j] != NULL) {
-            printf("%f - %f", (double)j/numOfUrlsInOriginalOrder, (double)findIndexof(originalOrder[i][j], anOrder)/(double)lengthOfAnOrder);
-            printf(" = %f\n", setToPositive( (double)j/numOfUrlsInOriginalOrder - (double)findIndexof(originalOrder[i][j], anOrder)/(double)lengthOfAnOrder));
-            footrule += setToPositive((double)j/numOfUrlsInOriginalOrder - (double)findIndexof(originalOrder[i][j], anOrder)/(double)lengthOfAnOrder);
+            printf("%f - %f", (double)(j+1)/numOfUrlsInOriginalOrder, (double)(findIndexof(originalOrder[i][j], anOrder)+1)/(double)lengthOfAnOrder);
+            printf(" = %f\n", setToPositive( (double)(j+1)/numOfUrlsInOriginalOrder - (double)(findIndexof(originalOrder[i][j], anOrder)+1)/(double)lengthOfAnOrder));
+            footrule += setToPositive((double)(j+1)/numOfUrlsInOriginalOrder - (double)(findIndexof(originalOrder[i][j], anOrder)+1)/(double)lengthOfAnOrder);
             printf("current footrule is %f\n", footrule);
             j++;
         }

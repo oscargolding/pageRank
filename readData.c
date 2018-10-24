@@ -55,16 +55,18 @@ static void copy(Node a, int *i, Node b, int *j);
 
 /* Helper other reading */
 static int checkIfIn(char *given, char **list, int no);
-static int checkURL(char *given);
 static void checkInside(char *url, urlL handle);
 static void clean(urlL given);
 static void printMatched(urlL handle);
 static int checkInsideURL(char *url, urlL given);
 static void insertInside(double pageRank, urlL given, char *url);
 static void printMatchedPage(urlL handle);
-static void sortOnPageSub(urlL given);
-static int cmpfunc1 (const void * a, const void * b);
-static int cmpfunc (const void * a, const void * b);
+
+/* Help in sorting searchResults */
+static void mergeSortSearch(Node list, int lo, int hi);
+static void mergeNodes(Node list, int lo, int mid, int hi);
+static void copyNode(Node a, int *i, Node b, int *j);
+static int moreNode(Node x, Node y);
 
 /* Get the connections for a given connections.txt */
 urlL getConnections(void) {
@@ -217,20 +219,14 @@ void writeToFile(urlL given) {
     fclose(fptr);
 }
 
-/* Check if it's inside */
+/* Given a list of words from STDIN, want to check whether a current string given
+ * is located within that list */
 static int checkIfIn(char *given, char **list, int no) {
     int i = 0;
     while (i < no) {
 	if (strcmp(given, list[i]) == 0) return TRUE;
 	i++;
     }
-    return FALSE;
-}
-
-/* Check the URL */
-static int checkURL(char *given) {
-    if (strlen(given) < 3) return FALSE;
-    if (given[0] == 'u' && given[1] == 'r' && given[2] == 'l') return TRUE;
     return FALSE;
 }
 
@@ -259,9 +255,6 @@ static void clean(urlL given) {
     given->index = 0;
     given->used = 0;
 }
-static int cmpfunc (const void * a, const void * b) {
-    return (((Node)b)->nItems - ((Node)a)->nItems);
-}
 
 /* Find macthing URLs 
  * This isn't an O(n^2) loop, as it's performing the same operation of reading 
@@ -274,21 +267,36 @@ void findMatchedURLs(char **list, int no) {
     urlL handle = malloc(sizeof(urlList));
     handle->nElem = tot;
     handle->list = malloc(tot * sizeof(urlNode));
-    clean(handle);	
-    char foundArr[1000];
-    while (fscanf(retrieve, "%s", foundArr) != EOF) {
-	if(checkIfIn(foundArr, list, no)) {
-	    while (fscanf(retrieve, "%s", foundArr) != EOF) {
-		if (checkURL(foundArr)) {
-		    checkInside(foundArr, handle);
-		} else {
-		    if(checkIfIn(foundArr, list, no)) continue;
-		    else break; 
-		}
+    clean(handle);
+    /* The string that will hold results from fgets */
+    char foundArr[10000];
+    while (fgets(foundArr, 10000, retrieve) != NULL) {
+	char delimiters[3];
+	delimiters[0] = '\n';
+	delimiters[1] = ' ';
+	delimiters[2] = '\0';
+	char *final;
+	char *used;
+	char *holding;
+	int i = 0;
+	char *try = foundArr;
+	while ((used = strsep(&try, delimiters)) != NULL) {
+	    /* Condition to break the separation of the strings */
+	    if (try == NULL) break;
+	    final = strdupa(used);
+	    if (i == 0) {
+		i = 1;
+		holding = strdupa(used);
+		continue;
 	    }
+	    if (checkIfIn(holding, list, no)) {
+		checkInside(final, handle);
+	    }
+	    i++;
 	}
+
     }
-    qsort(handle->list, handle->index, sizeof(urlNode), cmpfunc);
+    /* qsort(handle->list, handle->index, sizeof(urlNode), cmpfunc); */
     printMatched(handle);
     printf("Done\n");
     addPageRanks(handle);
@@ -333,7 +341,7 @@ void addPageRanks(urlL given) {
 	i++;
     }
     printMatchedPage(given);
-    if (given->index > 0) sortOnPageSub(given);
+    if (given->index > 0) mergeSortSearch(given->list, 0, given->nElem - 1);
     printf("### Sorted values for results ###\n");
     printMatchedPage(given);
 }
@@ -371,33 +379,50 @@ static void printMatchedPage(urlL handle) {
     }
 }
 
-static int cmpfunc1 (const void * a, const void * b) {
-    if (((Node)b)->pagerank > ((Node)a)->pagerank) {
-	return 1;
-    }
-    else if (((Node)a)->pagerank > ((Node)b)->pagerank) {
-	return -1;
-    }
-    else return 0;
+/* Helper function to properly sort values based on hits and the pageRank */
+static void mergeSortSearch(Node list, int lo, int hi) {
+    int mid = (lo+hi)/2; 
+    if (hi <= lo) return;
+    mergeSortSearch(list, lo, mid);
+    mergeSortSearch(list, mid+1, hi);
+    mergeNodes(list, lo, mid, hi);
 }
 
-static void sortOnPageSub(urlL given) {
-    int i = 0;
-    Node first = &(given->list[0]);
-    int set = given->list[0].nItems;
-    int counter = 1;
-    int seaT = 0;
-    while (i < given->index) {
-	if (given->list[i].nItems != set) {
-	    qsort(first, counter, sizeof(urlNode), cmpfunc1);
-	    set = given->list[i].nItems;
-	    first = &(given->list[i]);
-	    counter = 1;
-	    seaT = 0;
-	}
-	if (seaT != 0) counter++;
-	seaT++;
-	i++;
+/* A helper function to manager the merging of recursive  */
+static void mergeNodes(Node list, int lo, int mid, int hi) {
+    int  i, j, k, nitems = hi-lo+1;
+    Node tmp = malloc(nitems*sizeof(urlNode));
+    i = lo; j = mid+1; k = 0;
+    while (i <= mid && j <= hi) {
+	if (moreNode(&list[i],&list[j]))
+	    copyNode(tmp, &k, list, &i);
+	else
+	    copyNode(tmp, &k, list, &j);
     }
-    qsort(first, counter, sizeof(urlNode), cmpfunc1);
+    while (i <= mid) copyNode(tmp, &k, list, &i);
+    while (j <= hi) copyNode(tmp, &k, list, &j);
+
+    /* Copy back from the temp array */
+    for (i = lo, k = 0; i <= hi; i++, k++) {
+	list[i] = tmp[k];
+    }
+    free(tmp);
 }
+
+/* Helper function to check whether the values are precisely located 
+ * doing a sort on multiple values/keys */
+static int moreNode(Node x, Node y) {
+    if (x->nItems > y->nItems) return 1;
+    if (x->nItems == y->nItems) {
+	if (x->pagerank > y->pagerank) return 1;
+	else return 0;
+    } else return 0;
+}
+
+/* Helper function to manage some of the copying that's done */
+static void copyNode(Node a, int *i, Node b, int *j) {
+    a[*i] = b[*j];
+    *i = *i + 1;
+    *j = *j + 1;
+}
+

@@ -159,7 +159,7 @@ Tree insertSet(Tree given, char *word, char *url) {
 
 /* Function to write a tree out to a file */
 void writeInverted(Tree given) {
-    FILE *fptr = fopen("invertedIndexTest.txt", "w");
+    FILE *fptr = fopen("invertedIndex.txt", "w");
     assert(given != NULL);
     infixOrder(given, fptr);
     fclose(fptr);

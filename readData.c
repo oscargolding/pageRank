@@ -57,7 +57,6 @@ static void copy(Node a, int *i, Node b, int *j);
 static int checkIfIn(char *given, char **list, int no);
 static void checkInside(char *url, urlL handle);
 static void clean(urlL given);
-static void printMatched(urlL handle);
 static int checkInsideURL(char *url, urlL given);
 static void insertInside(double pageRank, urlL given, char *url);
 static void printMatchedPage(urlL handle);
@@ -258,10 +257,11 @@ static void clean(urlL given) {
 
 /* Find macthing URLs 
  * This isn't an O(n^2) loop, as it's performing the same operation of reading 
- * from a file with more conditions.
+ * from a file with more conditions. Since the url file can be any string of 
+ * text, and not just starting with 'url' then fgets has to be used for reading.
 */
 void findMatchedURLs(char **list, int no) {
-    FILE *retrieve = fopen("invertedIndexTest.txt", "r");
+    FILE *retrieve = fopen("invertedIndex.txt", "r");
     if (retrieve == NULL) perror("Couldn't open invertedIndexTest.txt");
     int tot = countURLs(retrieve);
     urlL handle = malloc(sizeof(urlList));
@@ -296,20 +296,7 @@ void findMatchedURLs(char **list, int no) {
 	}
 
     }
-    /* qsort(handle->list, handle->index, sizeof(urlNode), cmpfunc); */
-    printMatched(handle);
-    printf("Done\n");
-    addPageRanks(handle);
-    
-}
-
-static void printMatched(urlL handle) {
-    int i = 0;
-    while (i < handle->index) {
-	printf("%s\n", handle->list[i].url);
-	printf("%d\n", handle->list[i].nItems);
-	i++;
-    }
+    addPageRanks(handle);    
 }
 
 /* Function to add pageRanks from file */
@@ -340,9 +327,7 @@ void addPageRanks(urlL given) {
 	}
 	i++;
     }
-    printMatchedPage(given);
     if (given->index > 0) mergeSortSearch(given->list, 0, given->nElem - 1);
-    printf("### Sorted values for results ###\n");
     printMatchedPage(given);
 }
 
@@ -366,10 +351,13 @@ static void insertInside(double pageRank, urlL given, char *url) {
 	i++;
     }
 }
-/* Better */
+
+/* Using as a method to print out urls in their sorted order, the condition is 
+ * that only the top 30 pages need to be printed out */
 static void printMatchedPage(urlL handle) {
     int i = 0;
-    while (i < handle->index) {
+    /* Need to remove some of the commenting around the code block */
+    while (i < handle->index && i < 30) {
 	printf("# Block #\n");
 	printf("%s\n", handle->list[i].url);
 	printf("%d\n", handle->list[i].nItems);
@@ -379,7 +367,8 @@ static void printMatchedPage(urlL handle) {
     }
 }
 
-/* Helper function to properly sort values based on hits and the pageRank */
+/* Helper function to properly sort values based on hits and the pageRank, this
+ * makes use of two keys to sort based off of -> hits and then pagerank */
 static void mergeSortSearch(Node list, int lo, int hi) {
     int mid = (lo+hi)/2; 
     if (hi <= lo) return;
@@ -388,7 +377,7 @@ static void mergeSortSearch(Node list, int lo, int hi) {
     mergeNodes(list, lo, mid, hi);
 }
 
-/* A helper function to manager the merging of recursive  */
+/* A helper function to manager the merging of recursive cases */
 static void mergeNodes(Node list, int lo, int mid, int hi) {
     int  i, j, k, nitems = hi-lo+1;
     Node tmp = malloc(nitems*sizeof(urlNode));

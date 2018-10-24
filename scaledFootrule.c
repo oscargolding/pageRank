@@ -157,7 +157,7 @@ int main (int argc, char *argv[]) {
     printf("Done\n");
     fileDescriptorNode current = fileLL->first;
     int Ocount = 0;
-    while (Ocount < 5) {
+    while (Ocount < count) {
 	printf("%s\n", using[Ocount]);
 	Ocount++;
     }
@@ -171,9 +171,9 @@ int main (int argc, char *argv[]) {
     printf("size %d\n", size);
     printf("count %d\n", count);
     Node *a = calcFootRule(count, using, list, size);
-    printing(a, 5);
+    printing(a, count);
     printf("Hungarian\n");
-    hungarian(a, 5, using);
+    hungarian(a, count, using);
 
     return EXIT_SUCCESS;
 }

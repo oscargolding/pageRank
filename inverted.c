@@ -15,7 +15,6 @@ int main (int argc, char *argv[]) {
     urlL getList = getConnections();
     Tree new = populate(getList);
     writeInverted(new);
-    sanityCheck(new);
     return EXIT_SUCCESS;
 }
 

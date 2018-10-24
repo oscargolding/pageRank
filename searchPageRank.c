@@ -15,11 +15,9 @@ int main (int argc, char *argv[]) {
     char **list = malloc((argc-1)*sizeof(char *));
     int i = 1;
     int index = 0;
-    printf("Words provided = \n");
     while (i < argc) {
 	list[index] = strdup(argv[i]);
 	i++;
-	printf("%s\n", list[index]);
 	index++;
     }
     /* This will call a fetch function on getting the URLs */

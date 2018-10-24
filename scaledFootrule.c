@@ -30,7 +30,7 @@ typedef struct phNode {
     int colMark;
 } phNode;
 
-static int printInFix(urlTree given, int *count);
+static void printInFix(urlTree given, int *count);
 static urlTree rotateRight(urlTree n1);
 static urlTree rotateLeft(urlTree n1);
 static int treeDepth(urlTree given);
@@ -251,7 +251,7 @@ urlTree insertURL (char* url, urlTree given) {
 
 }
 
-static int printInFix(urlTree given, int *count) {
+static void printInFix(urlTree given, int *count) {
     if(given == NULL) return;
     printInFix(given->right, count);
     printf("%s\n", given->url);
@@ -493,7 +493,6 @@ static int *zeroAssignment(Node *given, int size) {
     }
     int array[size];
     memset(array, -1, size * sizeof(int));
-    int i = 0;
     int *hold = findPost(given, size, array);
     return hold;
 }
@@ -575,7 +574,6 @@ static void checkRowAssign(Node *given, int row, int size) {
 /* Check the column for any assigned rows */
 static void markCol(Node *given, int size, int col) {
     int i = 0;
-    int count = 0;
     if (given[0][col].colMark == 1) {
 	return;
     }

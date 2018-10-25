@@ -137,8 +137,7 @@ typedef struct list {
 
 int main (int argc, char *argv[]) {
 
-    /* Allowed to read in 1 file or more, on 1 file it prints out only file */
-    if(argc < 2) {
+    if(argc < 3) {
         printf("Usage: %s input_rank_file1, input_rank_file2... \n", argv[0]);
         return -1;
     }
@@ -148,6 +147,10 @@ int main (int argc, char *argv[]) {
     fileLL->first = malloc(sizeof(struct fileDescriptorsLL));
     fileLL->last = fileLL->first;
     fileLL->first->rankFile = fopen(argv[1],"r");
+    if(fileLL->first->rankFile == NULL) {
+        perror("Cannot open a file");
+        exit(EXIT_FAILURE);
+    }
     fileLL->first->rankOrder = createURLlist(fileLL->first->rankFile);
     fileLL->first->next = NULL;
 
@@ -156,6 +159,10 @@ int main (int argc, char *argv[]) {
         fileLL->last->next = malloc(sizeof(struct fileDescriptorsLL));
         fileLL->last = fileLL->last->next;
         fileLL->last->rankFile = fopen(argv[i],"r");
+        if(fileLL->last->rankFile == NULL) {
+            perror("Cannot open a file");
+            exit(EXIT_FAILURE);
+        }
         fileLL->last->next = NULL;
         fileLL->last->rankOrder = createURLlist(fileLL->last->rankFile);
         i++;
@@ -412,9 +419,9 @@ static void printing (Node *given, int unionSize) {
     while (row < unionSize) {
         int col = 0;
         while (col < unionSize) {
-            printf("(%d, %d) foot: %lf cross: %d assign: %d | rM: %d cM: %d | mA : %d", row, col,
+            printf("(%d, %d) foot: %lf cross: %d assign: %d", row, col,
              given[row][col].foot, given[row][col].crossedOut,
-		   given[row][col].assigned, given[row][col].rowMark, given[row][col].colMark, given[row][col].marked);
+             given[row][col].assigned);
             col++;
         }
         row++;
@@ -527,14 +534,9 @@ static int *zeroAssignment(Node *given, int size) {
         row++;
     }
     printf("Found: %d\n", found);
-    printing(given, size);
     markRows(given, 0, size);
-    printf("after mark\n");
-    printing(given, size);
     int min = calcMin(given, size);
-    printf("NEW\n");
-    printing(given, size);
-    printf("There are min %d\n", min);
+    printf("There are %d\n", min);
     if (min < size) {
         findMinAndSubtract(given, size);
         markRows(given, 0, size);
@@ -737,7 +739,7 @@ static int calcMin(Node *given, int size) {
 static void findMinAndSubtract(Node *given, int size) {
     printf("Finding the minimum\n");
     int row = 0;
-    double hit = -1;
+    int hit = -1;
     while (row < size) {
         int col = 0;
         while (col < size) {
@@ -753,7 +755,7 @@ static void findMinAndSubtract(Node *given, int size) {
         }
         row++;
     }
-    printf("Min is %lf\n", hit);
+    printf("Min is %d\n", hit);
     row = 0;
     while (row < size) {
         int col = 0;

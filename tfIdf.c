@@ -69,7 +69,7 @@ IDHold createInverse(void) {
     IDHold new = malloc(sizeof(invDoc));
     new->noURLs = 0;
     new->given = createTree();
-    FILE *using = fopen("invertedIndexTest.txt", "r");
+    FILE *using = fopen("invertedIndex.txt", "r");
     if (!using) {
         perror("Failed to open invertedIndex.txt\n");
         exit(EXIT_FAILURE);

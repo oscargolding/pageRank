@@ -59,7 +59,7 @@ static void printInFix(urlTree given, int *count);
 static urlTree rotateRight(urlTree n1);
 static urlTree rotateLeft(urlTree n1);
 static int treeDepth(urlTree given);
-static int countNodeInAVLTree(urlTree given);
+/* static int countNodeInAVLTree(urlTree given); */
 static void getArray(urlTree given, char **array, int *i);
 
 /* Helper functions to create a Matrix for Hungarian and perform operations */
@@ -67,7 +67,7 @@ static Node *createEmptyMatrix(int setSize);
 static Node *calcFootRule(int unionSize, char **Union, urlNode *array,
   int arraySize);
 static int findPlace(urlNode given, char *word);
-static void printing (Node *given, int unionSize);
+/* static void printing (Node *given, int unionSize); */
 static void minAndSub(Node given, int size);
 static void minColSub(Node *given, int size, int col);
 static void hungarian(Node *given, int size, char **Union);
@@ -172,34 +172,21 @@ int main (int argc, char *argv[]) {
         }
         currFile = currFile->next;
     }
-    printf("Num of distinct URLs is: %d\n", countNodeInAVLTree(unionOfURLs));
     /* Need to have the proper set-up */
     int count = 0;
     printInFix(unionOfURLs, &count);
-    printf("Done\n");
     char **using = malloc(sizeof(char *) * count);
     count = 0;
     getArray(unionOfURLs, using, &count);
     urlNode *list = malloc((argc-1) * sizeof(urlNode));
-    printf("Done\n");
     fileDescriptorNode current = fileLL->first;
-    int Ocount = 0;
-    while (Ocount < count) {
-        printf("%s\n", using[Ocount]);
-        Ocount++;
-    }
-    printf("Done\n");
     int size = 0;
     while (current != NULL) {
         list[size] = current->rankOrder->first;
         current = current->next;
         size++;
     }
-    printf("size %d\n", size);
-    printf("count %d\n", count);
     Node *a = calcFootRule(count, using, list, size);
-    printing(a, count);
-    printf("Hungarian\n");
     hungarian(a, count, using);
     
     return EXIT_SUCCESS;
@@ -231,11 +218,6 @@ urlListHeader createURLlist(FILE* rankFile) {
         }
     }
     return urlList;
-}
-
-static int countNodeInAVLTree(urlTree given) {
-    if (given == NULL) return 0;
-    return countNodeInAVLTree(given->left) + countNodeInAVLTree(given->right) + 1;
 }
 
 //Insert into tree
@@ -273,7 +255,6 @@ urlTree insertURL (char* url, urlTree given) {
 static void printInFix(urlTree given, int *count) {
     if(given == NULL) return;
     printInFix(given->right, count);
-    printf("%s\n", given->url);
     *count += 1;
     printInFix(given->left, count);
 }
@@ -282,7 +263,6 @@ static void getArray(urlTree given, char **array, int *i) {
     if(given == NULL) return;
     getArray(given->right, array, i);
     array[*i] = strdup(given->url);
-    printf("%s\n", array[*i]);
     *i += 1;
     getArray(given->left, array, i);
 }
@@ -376,9 +356,6 @@ static Node *copyMatrix(Node *given, int size) {
         }
         i++;
     }
-    printf("Printing copied matrix\n");
-    printing(given, size);
-    printf("Finished copying\n");
     return creation;
 }
 
@@ -406,22 +383,6 @@ static int findSize(urlNode given) {
     return i;
 }
 
-/* Print out the given footRules, this is a helper function */
-static void printing (Node *given, int unionSize) {
-    int row = 0;
-    while (row < unionSize) {
-        int col = 0;
-        while (col < unionSize) {
-            printf("(%d, %d) foot: %lf cross: %d assign: %d | rM: %d cM: %d | mA : %d", row, col,
-             given[row][col].foot, given[row][col].crossedOut,
-		   given[row][col].assigned, given[row][col].rowMark, given[row][col].colMark, given[row][col].marked);
-            col++;
-        }
-        row++;
-        printf("\n");
-    }
-}
-
 /* The Hungarian Algorithm basic, giving a broad level overview of how the 
  * algorithm performs */
 static void hungarian(Node *given, int size, char **Union) {
@@ -431,21 +392,12 @@ static void hungarian(Node *given, int size, char **Union) {
         minAndSub(&given[row][0], size);
         row++;
     }
-    printf("Min ROW\n");
-    printing(given, size);
     int col = 0;
     while (col < size) {
         minColSub(given, size, col);
         col++;
     }
-    printf("Min COL\n");
-    printing(given, size);
     int *hold = zeroAssignment(given, size);
-    int counter = 0;
-    while (counter < size) {
-        printf("%d\n", hold[counter]);
-        counter++;
-    }
     char *temp[size];
     int i = 0;
     double tot = 0;
@@ -526,21 +478,30 @@ static int *zeroAssignment(Node *given, int size) {
         }
         row++;
     }
-    printf("Found: %d\n", found);
-    printing(given, size);
     markRows(given, 0, size);
-    printf("after mark\n");
-    printing(given, size);
     int min = calcMin(given, size);
-    printf("NEW\n");
-    printing(given, size);
-    printf("There are min %d\n", min);
-    if (min < size) {
+    while (min < size) {
         findMinAndSubtract(given, size);
+	int row = 0;
+	while (row < size) {
+	    int col = 0;
+	    int hit = 0;
+	    while (col < size) {
+		if (given[row][col].foot == 0 && hit == 0 &&
+		    given[row][col].crossedOut == 0) {
+		    found++;
+		    given[row][col].assigned = 1;
+		    crossDownwards(given, size, col);
+		    hit = 1;
+		} else if (given[row][col].foot == 0 && hit != 0) {
+		    given[row][col].crossedOut = 1;
+		}
+		col++;
+	    }
+	    row++;
+	}
         markRows(given, 0, size);
         min = calcMin(given, size);
-        printf("New min %d\n", min);
-        printing(given, size);
     }
     int array[size];
     memset(array, -1, size * sizeof(int));
@@ -735,7 +696,6 @@ static int calcMin(Node *given, int size) {
  * matrix for use in subsequent iterations. This section of the algorithm is 
  * rarely ever reached (in most cases). But in some situations is required. */
 static void findMinAndSubtract(Node *given, int size) {
-    printf("Finding the minimum\n");
     int row = 0;
     double hit = -1;
     while (row < size) {
@@ -753,7 +713,6 @@ static void findMinAndSubtract(Node *given, int size) {
         }
         row++;
     }
-    printf("Min is %lf\n", hit);
     row = 0;
     while (row < size) {
         int col = 0;
@@ -781,6 +740,5 @@ static void findMinAndSubtract(Node *given, int size) {
             col++;
         }
         row++;
-    }
-    
+    }    
 }

@@ -358,11 +358,11 @@ static void printMatchedPage(urlL handle) {
     int i = 0;
     /* Need to remove some of the commenting around the code block */
     while (i < handle->index && i < 30) {
-	printf("# Block #\n");
+	//printf("# Block #\n");
 	printf("%s\n", handle->list[i].url);
-	printf("%d\n", handle->list[i].nItems);
-	printf("%lf\n", handle->list[i].pagerank);
-	printf("# End Block #\n");
+	//printf("%d\n", handle->list[i].nItems);
+	//printf("%lf\n", handle->list[i].pagerank);
+	//printf("# End Block #\n");
 	i++;
     }
 }

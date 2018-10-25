@@ -48,7 +48,7 @@ static int treeHeight(IDTree given);
 static IDTree createTree(void);
 static IDTree leftRotation(IDTree n2);
 static IDTree rightRotation(IDTree n1);
-static void showTree(IDTree given);
+// static void showTree(IDTree given);
 static IDTree urlTreeInsert(IDTree given, char *word);
 
 /* File helping functions */
@@ -71,9 +71,15 @@ IDHold createInverse(void) {
     new->noURLs = 0;
     new->given = createTree();
     FILE *using = fopen("invertedIndexTest.txt", "r");
-    if (!using) perror("Failed to open invertedIndex.txt\n");
+    if (!using) {
+        perror("Failed to open invertedIndex.txt\n");
+        exit(EXIT_FAILURE);
+    }
     FILE *collect = fopen("collection.txt", "r");
-    if (!collect) perror("Failed to open collection.txt\n");
+    if (!collect) {
+        perror("Failed to open collection.txt\n");
+        exit(EXIT_FAILURE);
+    }
     /* At this point read the file to do the appropriate operations */
     char line[10000];
     /* Read until the end of the file is reached */
@@ -101,8 +107,8 @@ IDHold createInverse(void) {
 	line[0] = '\0';
     }
     new->noURLs = countURLs(collect);
-    showTree(new->given);
-    printf("The total amount of links are: %d\n", new->noURLs);
+    // showTree(new->given);
+    // printf("The total amount of links are: %d\n", new->noURLs);
     fclose(using);
     fclose(collect);
     return new;
@@ -112,7 +118,10 @@ IDHold createInverse(void) {
 tfIdfData populateData(IDHold provided) {
     /* Open the collections file as a starting point */
     FILE *conn = fopen("collection.txt", "r");
-    if (conn == NULL) perror("Couldn't open connection.txt file\n");
+    if (conn == NULL) {
+        perror("Couldn't open connection.txt file\n");
+        exit(EXIT_FAILURE);
+    }
     /* Set up the data structure to hold memory information on relevant files */
     tfIdfData using = malloc(sizeof(termFreq));
     using->nItems = provided->noURLs;
@@ -130,9 +139,9 @@ tfIdfData populateData(IDHold provided) {
     i = 0;
     while (i < using->nItems) {
 	readingSet(using->list[i].url, &using->list[i]);
-	printf("### %s ###\n", using->list[i].url);
-	showTree(using->list[i].file);
-	printf("Total elements: %d\n", using->list[i].elements);
+	// printf("### %s ###\n", using->list[i].url);
+	// showTree(using->list[i].file);
+	// printf("Total elements: %d\n", using->list[i].elements);
 	i++;
     }
     return using;
@@ -149,7 +158,10 @@ static void readingSet(char *url, Freq given) {
     char result[1000];
     char *want = "Section-2";
     FILE *start = fopen(reading, "r");
-    if (start == NULL) perror("Can't open file\n");
+    if (start == NULL) {
+        perror("Can't open file\n");
+        exit(EXIT_FAILURE);
+    }
     fseek(start, 0, SEEK_SET);
     /* Want to reach the desired position in file to start reading */
     while (fscanf(start, "%s", result) != EOF) {
@@ -298,13 +310,13 @@ static IDTree insertSet(IDTree given, char *word, int count) {
     return given;					 
 }
 
-/* Show the Tree using inorder */
-static void showTree(IDTree given) {
-    if (given == NULL) return;
-    showTree(given->left);
-    printf("%s : %d\n", given->word, given->count);
-    showTree(given->right);
-}
+// /* Show the Tree using inorder */
+// static void showTree(IDTree given) {
+//     if (given == NULL) return;
+//     showTree(given->left);
+//     printf("%s : %d\n", given->word, given->count);
+//     showTree(given->right);
+// }
 
 /* Another AVL insertion function, except this can respond dynamically to 
  * the presence of there already being a line of text in the tree */
@@ -349,20 +361,20 @@ void calcTfIdf(char **array, tfIdfData given, IDHold tree, int elem) {
 	i++;
     }
     i = 0;
-    printf("Showing results\n");
-    while (i < given->nItems) {
-	printf("%s %d %lf\n", given->list[i].url, given->list[i].found,
-	       given->list[i].tfIdf);
-	i++;
-    }
+ //    printf("Showing results\n");
+ //    while (i < given->nItems) {
+	// printf("%s %d %lf\n", given->list[i].url, given->list[i].found,
+	//        given->list[i].tfIdf);
+	// i++;
+ //    }
     mergeSort(given->list, 0, given->nItems-1);
     i = 0;
-    printf("Showing results\n");
-    while (i < given->nItems) {
-	printf("%s %d %lf\n", given->list[i].url, given->list[i].found,
-	       given->list[i].tfIdf);
-	i++;
-    }
+    // printf("Showing results\n");
+ //    while (i < given->nItems) {
+	// printf("%s %d %lf\n", given->list[i].url, given->list[i].found,
+	//        given->list[i].tfIdf);
+	// i++;
+ //    }
 }
 
 /* Find a given value in a binary search tree */
@@ -380,8 +392,8 @@ static int findInTree(IDTree tree, char *given) {
 /* A helper function to perform calculations of tf-IDF values that are needed */
 static void calcBased(char *input, tfIdfData provided, IDHold tree) {
     int found = findInTree(tree->given, input);
-    printf("%d found\n", found);
-    showTree(tree->given);
+    // printf("%d found\n", found);
+    // showTree(tree->given);
     int totN = tree->noURLs;
     if (found == 0 || totN == 0) return;
     else {

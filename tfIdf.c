@@ -369,20 +369,20 @@ static void calcBased(char *input, tfIdfData provided, IDHold tree) {
     int totN = tree->noURLs;
     if (found == 0 || totN == 0) return;
     else {
-    double frac = (double)totN/(double)found;
-    double idf = log(frac);
-    int i = 0;
-    while (i < provided->nItems) {
-        int termFreq = findInTree(provided->list[i].file, input);
-        int docFreq = provided->list[i].elements;
-        if (termFreq > 0 && docFreq > 0) {
-            double tf = (double)termFreq/(double)docFreq;
-            double tfIdf = tf * idf;
-            provided->list[i].found++;
-            provided->list[i].tfIdf += tfIdf;
+        double frac = (double)totN/(double)found;
+        double idf = log10(frac);
+        int i = 0;
+        while (i < provided->nItems) {
+            int termFreq = findInTree(provided->list[i].file, input);
+            int docFreq = provided->list[i].elements;
+            if (termFreq > 0 && docFreq > 0) {
+                double tf = (double)termFreq/(double)docFreq;
+                double tfIdf = tf * idf;
+                provided->list[i].found++;
+                provided->list[i].tfIdf += tfIdf;
+            }
+            i++;
         }
-        i++;
-    }
     }
 }
 

@@ -137,8 +137,7 @@ typedef struct list {
 
 int main (int argc, char *argv[]) {
 
-    /* Allowed to read in 1 file or more, on 1 file it prints out only file */
-    if(argc < 2) {
+    if(argc < 3) {
         printf("Usage: %s input_rank_file1, input_rank_file2... \n", argv[0]);
         return -1;
     }
@@ -148,6 +147,10 @@ int main (int argc, char *argv[]) {
     fileLL->first = malloc(sizeof(struct fileDescriptorsLL));
     fileLL->last = fileLL->first;
     fileLL->first->rankFile = fopen(argv[1],"r");
+    if(fileLL->first->rankFile == NULL) {
+        perror("Cannot open a file");
+        exit(EXIT_FAILURE);
+    }
     fileLL->first->rankOrder = createURLlist(fileLL->first->rankFile);
     fileLL->first->next = NULL;
 
@@ -156,6 +159,10 @@ int main (int argc, char *argv[]) {
         fileLL->last->next = malloc(sizeof(struct fileDescriptorsLL));
         fileLL->last = fileLL->last->next;
         fileLL->last->rankFile = fopen(argv[i],"r");
+        if(fileLL->last->rankFile == NULL) {
+            perror("Cannot open a file");
+            exit(EXIT_FAILURE);
+        }
         fileLL->last->next = NULL;
         fileLL->last->rankOrder = createURLlist(fileLL->last->rankFile);
         i++;
@@ -697,7 +704,7 @@ static int calcMin(Node *given, int size) {
  * rarely ever reached (in most cases). But in some situations is required. */
 static void findMinAndSubtract(Node *given, int size) {
     int row = 0;
-    double hit = -1;
+    int hit = -1;
     while (row < size) {
         int col = 0;
         while (col < size) {

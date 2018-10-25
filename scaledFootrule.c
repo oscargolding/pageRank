@@ -137,7 +137,8 @@ typedef struct list {
 
 int main (int argc, char *argv[]) {
 
-    if(argc < 3) {
+    /* Allowed to read in 1 file or more, on 1 file it prints out only file */
+    if(argc < 2) {
         printf("Usage: %s input_rank_file1, input_rank_file2... \n", argv[0]);
         return -1;
     }
@@ -411,9 +412,9 @@ static void printing (Node *given, int unionSize) {
     while (row < unionSize) {
         int col = 0;
         while (col < unionSize) {
-            printf("(%d, %d) foot: %lf cross: %d assign: %d", row, col,
+            printf("(%d, %d) foot: %lf cross: %d assign: %d | rM: %d cM: %d | mA : %d", row, col,
              given[row][col].foot, given[row][col].crossedOut,
-             given[row][col].assigned);
+		   given[row][col].assigned, given[row][col].rowMark, given[row][col].colMark, given[row][col].marked);
             col++;
         }
         row++;
@@ -526,9 +527,14 @@ static int *zeroAssignment(Node *given, int size) {
         row++;
     }
     printf("Found: %d\n", found);
+    printing(given, size);
     markRows(given, 0, size);
+    printf("after mark\n");
+    printing(given, size);
     int min = calcMin(given, size);
-    printf("There are %d\n", min);
+    printf("NEW\n");
+    printing(given, size);
+    printf("There are min %d\n", min);
     if (min < size) {
         findMinAndSubtract(given, size);
         markRows(given, 0, size);
@@ -731,7 +737,7 @@ static int calcMin(Node *given, int size) {
 static void findMinAndSubtract(Node *given, int size) {
     printf("Finding the minimum\n");
     int row = 0;
-    int hit = -1;
+    double hit = -1;
     while (row < size) {
         int col = 0;
         while (col < size) {
@@ -747,7 +753,7 @@ static void findMinAndSubtract(Node *given, int size) {
         }
         row++;
     }
-    printf("Min is %d\n", hit);
+    printf("Min is %lf\n", hit);
     row = 0;
     while (row < size) {
         int col = 0;

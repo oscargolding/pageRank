@@ -1,4 +1,24 @@
-/* A file to search for aggregate 2 rank files */
+/* A file to search for aggregate n number of rank files */
+
+/* ScaledFootRule -> Implementation of algorithm to calculate a scheduling 
+ * problem. 
+ * BRIEF: The solution provided is non-polynomial in time complexity, i.e. it
+ * scales up according to the cardinality of the union. To solve this, we have
+ * implemented the Hungarian Algorithm as a method to compute rankings within
+ * polynomial time. 
+ * Hungarian Algorithm -> given input files that are already ranked, the scaled 
+ * footrule (in the specification) can be applied to determine all possible 
+ * rankings at each of the positions. This allows for the creation of a simple
+ * bipartite graph with the two disjoint vertex sets being available positions
+ * and the names of the ranks in file. This can be done using an adjacency 
+ * matrix. From here operations are done on the matrix to reduce the problem 
+ * down to find a minimum cost solution (minimum cost being least weights of 
+ * edges between vertexes in the disjoint sets).
+ * Total cost -> O(n^4) using the matrix method of implementation. 
+ *
+ * Details : https://en.wikipedia.org/wiki/Hungarian_algorithm
+ * https://hal.archives-ouvertes.fr/hal-01540920/document
+ */
 
 #define _GNU_SOURCE 1
 
@@ -9,6 +29,7 @@
 
 #include "scaledFootrule.h"
 
+/* Data structures to help with upkeep */
 typedef struct urlElement* urlNode;
 typedef struct listHeader* urlListHeader;
 typedef struct fileDescriptorsLL* fileDescriptorNode;
@@ -42,7 +63,7 @@ static int countNodeInAVLTree(urlTree given);
 static void getArray(urlTree given, char **array, int *i);
 // static void printLL(urlNode given);
 
-/* Helper functions to create a Matrix */
+/* Helper functions to create a Matrix for Hungarian and perform operations */
 static Node *createEmptyMatrix(int setSize);
 static Node *calcFootRule(int unionSize, char **Union, urlNode *array,
 			  int arraySize);
@@ -107,9 +128,9 @@ struct urlTree
     urlTree right;
 };
 
-
 typedef struct list *List;
 
+/* Linked List for storing initial information */
 typedef struct list {
     char *url;
     List next;
@@ -121,7 +142,6 @@ int main (int argc, char *argv[]) {
         printf("Usage: %s input_rank_file1, input_rank_file2... \n", argv[0]);
         return -1;
     }
-
 
     //Populates the LL with the file descriptors and order of URLs
     fileDescriptorHead fileLL = malloc(sizeof(struct fileDescriptorsLLHead));
@@ -311,7 +331,8 @@ static Node *createEmptyMatrix(int setSize) {
     return a;
 }
 
-/* Calculate the footRule and return it organised */
+/* Calculate the footRule and return it organised, this is the set-up of the 
+ * matrix with no operations having been performed on it yet  */
 static Node *calcFootRule(int unionSize, char **Union, urlNode *array,
 			  int arraySize) {
     Node *creation = createEmptyMatrix(unionSize);
@@ -346,6 +367,8 @@ static Node *calcFootRule(int unionSize, char **Union, urlNode *array,
     return creation;
 }
 
+/* Copy the matrix to we can retain original values when calculating the 
+ * minimal cost of the problem */
 static Node *copyMatrix(Node *given, int size) {
     Node *creation = createEmptyMatrix(size);
     int i = 0;
@@ -391,7 +414,7 @@ static int findSize(urlNode given) {
     return i;
 }
 
-/* Print out the given footRules */
+/* Print out the given footRules, this is a helper function */
 static void printing (Node *given, int unionSize) {
     int row = 0;
     while (row < unionSize) {
@@ -407,7 +430,8 @@ static void printing (Node *given, int unionSize) {
     }
 }
 
-/* The Hungarian Algorithm basic */
+/* The Hungarian Algorithm basic, giving a broad level overview of how the 
+ * algorithm performs */
 static void hungarian(Node *given, int size, char **Union) {
     Node *retained = copyMatrix(given, size);
     int row = 0;
@@ -446,7 +470,7 @@ static void hungarian(Node *given, int size, char **Union) {
     }    
 }
 
-/* Find the row min and subtract off matrix */
+/* Find the row min and subtract off the matrix */
 static void minAndSub(Node given, int size) {
     int i = 0;
     double min = given[i].foot;
@@ -478,12 +502,18 @@ static void minColSub(Node *given, int size, int col) {
     }
 }
 
+/* NB this is an important part, since after performing operations on a matrix
+ * we want to check zero values, due to IEEE float standards we may be close 
+ * to zero but not precisely there. Hence,  if a double value is within our 
+ * below define 'interval of faith' of 0.000000005 then we classify this
+ * number as being 0.0 */
 static int checkZero(double given) {
     if (fabs(given) < 0.000000005) return TRUE;
     else return FALSE;
 }
 
-/* Assign zeros to parts of the matrix */
+/* Assign zeros to parts of the matrix. This marks parts of the matrix and 
+ * allows for the algorithm to continue onwards using new marked values */
 static int *zeroAssignment(Node *given, int size) {
     int row = 0;
     int found = 0;
@@ -521,7 +551,8 @@ static int *zeroAssignment(Node *given, int size) {
     return hold;
 }
 
-/* Find the correct parts of matrix to allocate inside a list */
+/* Find the correct parts of matrix to allocate inside a list. This finds 
+ * the positions within the original matrix that provided the minimum cost */
 static int *findPost(Node *given, int size, int *array) {
     int newCol = 0;
     while (newCol < size) {
@@ -549,7 +580,8 @@ static int *findPost(Node *given, int size, int *array) {
     return hold;
 }
 
-/* Find the smallest row */
+/* Find the smallest column, and return it to the parent function. When 
+ * there are no cols left return -1 */
 static int findSmallestCol(Node *given, int size) {
     int col = 0;
     int hit = -1;
@@ -573,6 +605,8 @@ static int findSmallestCol(Node *given, int size) {
     return sizeR;
 }
 
+/* Calculate the number of zeros that are present in a single column of a 
+ * matrix */
 static int findNoZeros(Node *given, int size, int col) {
     int num = 0;
     int row = 0;
@@ -583,7 +617,7 @@ static int findNoZeros(Node *given, int size, int col) {
     return num;
 }
 
-/* Check inside a list to see whether present */
+/* Check inside a list to see whether position is present or not */
 static int checkInside(int *array, int size, int pos) {
     int i = 0;
     while (i < size) {
@@ -595,7 +629,7 @@ static int checkInside(int *array, int size, int pos) {
     return 1;
 }
 
-/* Check downwards and mark */
+/* Mark any zeros that appear downwards to assist in algorithm calculations */
 static void crossDownwards(Node *given, int size, int col) {
     int i = 0;
     while (i < size) {
@@ -606,7 +640,7 @@ static void crossDownwards(Node *given, int size, int col) {
     }
 }
 
-/* Mark all rows in the matrix as per conditions needed */
+/* Mark all rows in the matrix as per conditions needed for the algorithm*/
 static void markRows(Node *given, int col, int size) {
     int row = 0;
     while (row < size) {
@@ -615,7 +649,8 @@ static void markRows(Node *given, int col, int size) {
     }
 }
 
-/* Check whether the row has been assigned or not */
+/* Check whether the row has been assigned or not, and the forwards assign 
+ * columns as necessary so long as they haven't been assigned */
 static void checkRowAssign(Node *given, int row, int size) {
     int i = 0;
     while (i < size) {
@@ -635,7 +670,7 @@ static void checkRowAssign(Node *given, int row, int size) {
     }
 }
 
-/* Check the column for any assigned rows */
+/* Check the column for any assigned rows, and then assign columns necessary */
 static void markCol(Node *given, int size, int col) {
     int i = 0;
     if (given[0][col].colMark == 1) {
@@ -651,7 +686,7 @@ static void markCol(Node *given, int size, int col) {
     }    
 }
 
-/* Marks rows going across */
+/* Marks rows going across on the condition element contains 0 */
 static void markRowAcross(Node *given, int size, int row) {
     int i = 0;
     if (given[row][0].rowMark == 1) {
@@ -666,7 +701,9 @@ static void markRowAcross(Node *given, int size, int row) {
     }
 }
 
-/* Find the minimum number of lines drawn over matrix */
+/* Find the minimum number of lines drawn over matrix using the conditions
+ * provided in the algorithm -> min being all columns marks and rows not 
+ * having been marked */
 static int calcMin(Node *given, int size) {
     int col = 0;
     int min = 0;
@@ -698,7 +735,8 @@ static int calcMin(Node *given, int size) {
 }
 
 /* Find the minimum of the matrix and then subtract, also want to clear the 
- * matrix for use in subsequent iterations*/
+ * matrix for use in subsequent iterations. This section of the algorithm is 
+ * rarely ever reached (in most cases). But in some situations is required. */
 static void findMinAndSubtract(Node *given, int size) {
     printf("Finding the minimum\n");
     int row = 0;

@@ -12,8 +12,8 @@ static Graph getGraph(urlL given);
 int main (int argc, char *argv[]) {
     /* Implement from here */
     if (argc < 4) {
-	fprintf(stderr, "Program requires three arguments\n");
-	exit(1);
+        fprintf(stderr, "Program requires three arguments\n");
+        exit(EXIT_FAILURE);
     }
     double d = strtod(argv[1], NULL);
     double diffPR = strtod(argv[2], NULL);
@@ -37,11 +37,11 @@ static Graph getGraph(urlL given) {
     Graph g = newGraph(nVert);
     int i = 0;
     while (i < nVert) {
-	char *url = returnURL(i, given);
-	readingVert(g, url, given, i);
-	i++;
-    }
-    return g;
+        char *url = returnURL(i, given);
+        readingVert(g, url, given, i);
+        i++;
+     }
+     return g;
 }
 
 /* Function to assist in graph population */
@@ -58,17 +58,20 @@ static void readingVert(Graph g, char *url, urlL given, int pos) {
     char *ignore2 = "#end";
     char result[1000];
     FILE *start = fopen(reading, "r");
-    if (start == NULL) perror("Can't open file\n");
+    if (start == NULL) {
+        perror("Can't open file\n");
+        exit(EXIT_FAILURE);
+    }
     fseek(start, 0, SEEK_SET);
     while (fscanf(start, "%s", result) != EOF) {
-	if ((strcmp(result, ignore0) == 0) || strcmp(result, ignore1) == 0) {
-	    /* Ignore the headers */
-	    continue;
-	} else if (strcmp(result, ignore2) == 0) {
-	    /* This is the end of outgoing links */
-	    break;
-	}
-	int loc = findPosUrl(result, given);
-	addConnection(g, pos, loc);
+        if ((strcmp(result, ignore0) == 0) || strcmp(result, ignore1) == 0) {
+ 	          /* Ignore the headers */
+            continue;
+        } else if (strcmp(result, ignore2) == 0) {
+ 	          /* This is the end of outgoing links */
+            break;
+        }
+        int loc = findPosUrl(result, given);
+        addConnection(g, pos, loc);
     }
 }

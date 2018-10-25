@@ -74,27 +74,27 @@ Graph newGraph(int vertices) {
     double pVal = 1/conver;
     /* Appropriate process to create graph */
     while (i < vertices) {
-	g->connections[i] = malloc(sizeof(struct baseVertex));
-	g->connections[i]->outGoing = 0;
-	g->connections[i]->inComing = 0;
-	g->connections[i]->length = 0;
-	g->connections[i]->node = NULL;
-	g->connections[i]->refs = NULL;
-	g->connections[i]->pageRank = pVal;
-	g->connections[i]->oldPageRank = pVal;
-	i++;
-    }
-    return g;
+       g->connections[i] = malloc(sizeof(struct baseVertex));
+       g->connections[i]->outGoing = 0;
+       g->connections[i]->inComing = 0;
+       g->connections[i]->length = 0;
+       g->connections[i]->node = NULL;
+       g->connections[i]->refs = NULL;
+       g->connections[i]->pageRank = pVal;
+       g->connections[i]->oldPageRank = pVal;
+       i++;
+   }
+   return g;
 }
 
 /* Check if a given vertex is in the connection list */
 static int inVertexList(bVertex given, int vertex) {
     vNode current = given->node;
     while (current != NULL) {
-	if (current->vertex == vertex) return TRUE;
-	current = current->next;
-    }
-    return FALSE;
+       if (current->vertex == vertex) return TRUE;
+       current = current->next;
+   }
+   return FALSE;
 }
 
 /* Generic function to add a connection between two vertices in a graph */
@@ -102,12 +102,12 @@ static int inVertexList(bVertex given, int vertex) {
 void addConnection(Graph g, int start, int end) {
     if (start == end) return;
     if (!inVertexList(g->connections[start], end)) {
-	g->connections[start]->node = insertInside(g->connections[start], end);
-	g->connections[end]->refs = insertReference(g->connections[end], start);
-	g->connections[end]->inComing++;
-	g->connections[start]->outGoing++;
-	g->nE++;	
-    }
+       g->connections[start]->node = insertInside(g->connections[start], end);
+       g->connections[end]->refs = insertReference(g->connections[end], start);
+       g->connections[end]->inComing++;
+       g->connections[start]->outGoing++;
+       g->nE++;	
+   }
 }
 static vNode insertReference(bVertex list, int vertex) {
     vNode new = malloc(sizeof(struct vertNode));
@@ -129,36 +129,36 @@ void showGraph(Graph g) {
     printf("nVE: %d, nE: %d\n", g->nV, g->nE);
     int i = 0;
     while (i < g->nV) {
-	vNode current = g->connections[i]->node;
-	bVertex given = g->connections[i];
-	printf("%d has %d outgoing links, %d incoming and %.9f pagerank\n", i,
-	       given->outGoing, given->inComing, given->pageRank);
-	if (current == NULL) printf("%d connects to nothing\n", i);
-	while (current != NULL) {
-	    printf("%d connects to %d\n", i, current->vertex);
-	    current = current->next;
-	}
-	i++;
-    }
-    printf("########## Detailing the references ##########\n");
-    i = 0;
-    while (i < g->nV) {
-	vNode refCurr = g->connections[i]->refs;
-	bVertex given = g->connections[i];
-	printf("%d has %d outgoing links, %d incoming and %.7f pagerank\n", i,
-	       given->outGoing, given->inComing, given->pageRank);
-	if (refCurr == NULL) printf("%d connects to nothing\n", i);
-	while (refCurr != NULL) {
-	    printf("%d is referenced by %d\n", i, refCurr->vertex);
-	    refCurr = refCurr->next;
-	}
-	i++;
-    }
+       vNode current = g->connections[i]->node;
+       bVertex given = g->connections[i];
+       printf("%d has %d outgoing links, %d incoming and %.9f pagerank\n", i,
+        given->outGoing, given->inComing, given->pageRank);
+       if (current == NULL) printf("%d connects to nothing\n", i);
+       while (current != NULL) {
+           printf("%d connects to %d\n", i, current->vertex);
+           current = current->next;
+       }
+       i++;
+   }
+   printf("########## Detailing the references ##########\n");
+   i = 0;
+   while (i < g->nV) {
+       vNode refCurr = g->connections[i]->refs;
+       bVertex given = g->connections[i];
+       printf("%d has %d outgoing links, %d incoming and %.7f pagerank\n", i,
+        given->outGoing, given->inComing, given->pageRank);
+       if (refCurr == NULL) printf("%d connects to nothing\n", i);
+       while (refCurr != NULL) {
+           printf("%d is referenced by %d\n", i, refCurr->vertex);
+           refCurr = refCurr->next;
+       }
+       i++;
+   }
 }
 
 /* Calculate the pageRank of a graph */
 void calculatePageRank(Graph g, urlL list, double d, double diffPR,
-		       int maxIter) {
+   int maxIter) {
     /* Need to set-up the algorithm accordingly */
     int iteration = 0;
     int N = getNoURL(list);    
@@ -166,12 +166,12 @@ void calculatePageRank(Graph g, urlL list, double d, double diffPR,
     /* start the iterations loop */
     while ((iteration < maxIter) && (diff >= diffPR)) {
 	/* Need to get the pageSummation part */
-	double *ret = updateAll(g, d, diffPR, N);
-	diff = sumDiff(g, N, ret); 
-	iteration++;
-    }
-    persistRanks(list, g);
-    return;
+       double *ret = updateAll(g, d, diffPR, N);
+       diff = sumDiff(g, N, ret); 
+       iteration++;
+   }
+   persistRanks(list, g);
+   return;
 }
 
 /* Function that computes simulatenous updating across all vertices that are
@@ -184,24 +184,24 @@ static double *updateAll(Graph g, double d, double diffPR, int N) {
     double arr[N];
     double *ret = malloc(N*sizeof(double));
     while (i < N) {
-	ret[i] = g->connections[i]->pageRank;
-	i++;
-    }
-    i = 0;
+       ret[i] = g->connections[i]->pageRank;
+       i++;
+   }
+   i = 0;
     /* Can't change the pageRank immediately, must wait for all pages */
-    while (i < N) {	
-	double backRef = pageSummation(g, g->connections[i], i);
-	double endTerm = d*backRef;
-	double newPageRank = fronTerm + endTerm;
-	arr[i] = newPageRank;
-	i++;
-    }
-    i = 0;
-    while (i < N) {
-	g->connections[i]->pageRank = arr[i];
-	i++;
-    }
-    return ret;
+   while (i < N) {	
+       double backRef = pageSummation(g, g->connections[i], i);
+       double endTerm = d*backRef;
+       double newPageRank = fronTerm + endTerm;
+       arr[i] = newPageRank;
+       i++;
+   }
+   i = 0;
+   while (i < N) {
+       g->connections[i]->pageRank = arr[i];
+       i++;
+   }
+   return ret;
 }
 
 /* Sum the difference between two graph points */
@@ -209,12 +209,12 @@ static double sumDiff(Graph g, int N, double *arr) {
     int i = 0;
     double sum = 0;
     while (i < N) {
-	double res = fabs(g->connections[i]->pageRank -
-			 arr[i]);
-	sum += res;
-	i++;	
-    }
-    return sum;
+       double res = fabs(g->connections[i]->pageRank -
+        arr[i]);
+       sum += res;
+       i++;	
+   }
+   return sum;
 }
 
 /* Helper function that assists in counting pageSummation */
@@ -224,16 +224,16 @@ static double pageSummation(Graph g, bVertex spec, int pageUsing) {
     /* Set a default value for the summation */
     double defaultSum = 0;
     while (refCurr != NULL) {
-	double pageRankRef = g->connections[refCurr->vertex]->pageRank;
-	double weightIn = weightedInLinks(g->connections[refCurr->vertex], spec,
-					  g);
-	double weightOut = weightedOutLinks(g->connections[refCurr->vertex],
-					    spec, g);
-	double mult = (pageRankRef * weightIn * weightOut);
-	defaultSum += mult;
-	refCurr = refCurr->next;
-    }
-    return defaultSum;
+       double pageRankRef = g->connections[refCurr->vertex]->pageRank;
+       double weightIn = weightedInLinks(g->connections[refCurr->vertex], spec,
+         g);
+       double weightOut = weightedOutLinks(g->connections[refCurr->vertex],
+           spec, g);
+       double mult = (pageRankRef * weightIn * weightOut);
+       defaultSum += mult;
+       refCurr = refCurr->next;
+   }
+   return defaultSum;
 }
 
 /* Helper to find the weighted inLinks */
@@ -244,13 +244,13 @@ static double weightedInLinks(bVertex j, bVertex i, Graph g) {
     vNode current = j->node;
     double sum = 0;
     while (current != NULL) {
-	sum += g->connections[current->vertex]->inComing;
-	current = current->next;
-    }
-    double conTop = (double)inLinkI;
-    double conBot = sum;
-    double res = conTop/conBot;
-    return res;
+       sum += g->connections[current->vertex]->inComing;
+       current = current->next;
+   }
+   double conTop = (double)inLinkI;
+   double conBot = sum;
+   double res = conTop/conBot;
+   return res;
 }
 
 /* Helper to find the weighted outLinks */
@@ -261,32 +261,32 @@ static double weightedOutLinks(bVertex j, bVertex i, Graph g) {
     vNode current = j->node;
     double sum = 0;
     while (current != NULL) {
-	double val = (double)g->connections[current->vertex]->outGoing;
-	if (val == 0) {
-	    val = 0.5;
-	}
-	sum += val;
-	current = current->next;
-    }
-    double conTop = (double)outLinkI;
-    if (conTop == 0) {
-	conTop = 0.5;
-    }
-    double conBot = sum;
-    if (conBot == 0) {
-	conBot = 0.5;	
-    }
-    double res = conTop/conBot;
-    return res;
+       double val = (double)g->connections[current->vertex]->outGoing;
+       if (val == 0) {
+           val = 0.5;
+       }
+       sum += val;
+       current = current->next;
+   }
+   double conTop = (double)outLinkI;
+   if (conTop == 0) {
+       conTop = 0.5;
+   }
+   double conBot = sum;
+   if (conBot == 0) {
+       conBot = 0.5;	
+   }
+   double res = conTop/conBot;
+   return res;
 }
 
 /* Helper function to persist calculate pageRanks */
 static void persistRanks(urlL list, Graph g) {
     int i = 0;
     while (i < g->nV) {
-	insertPagerank(g->connections[i]->pageRank, i,
-		       g->connections[i]->outGoing, list);
-	i++;
-    }
-    return;
+       insertPagerank(g->connections[i]->pageRank, i,
+           g->connections[i]->outGoing, list);
+       i++;
+   }
+   return;
 }

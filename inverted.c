@@ -25,11 +25,11 @@ Tree populate(urlL given) {
     Tree new = createSet();
     int i = 0;
     while (i < nVert) {
-	char *url = returnURL(i, given);
-	new = readingSet(url, given, new);
-	i++;
-    }
-    return new;    
+       char *url = returnURL(i, given);
+       new = readingSet(url, given, new);
+       i++;
+   }
+   return new;    
 }
 
 /* Helper to allow reading from a url to get contents and text processing */
@@ -48,35 +48,35 @@ static Tree readingSet(char *url, urlL given, Tree first) {
     fseek(start, 0, SEEK_SET);
     /* Want to reach the desired position in file to start reading */
     while (fscanf(start, "%s", result) != EOF) {
-	if (strcmp(result, want) == 0) break;
+     if (strcmp(result, want) == 0) break;
     }
-    /* At this point can do the required reading of files */
+       /* At this point can do the required reading of files */
     char *bad = "#end";
     while (fscanf(start, "%s", result) != EOF) {
-	if (strcmp(result, bad) == 0) break;
-	int len = strlen(result);
-	if (len > 0) {
-	    /* Get the last character */
-	    char cha = result[len-1];
-	    switch(cha) {
-	    case '.':
-		result[len-1] = '\0';
-		break;
-	    case ',':
-		result[len-1] = '\0';
-		break;
-	    case ';':
-		result[len-1] = '\0';
-		break;
-	    case '?':
-		result[len-1] = '\0';
-		break;
-	    default:
-		break;
-	    }
-	    char *better = lowerString(result);	    
-	    first = insertSet(first, better, url);	    
-	}
+        if (strcmp(result, bad) == 0) break;
+        int len = strlen(result);
+        if (len > 0) {
+   	        /* Get the last character */
+            char cha = result[len-1];
+            switch(cha) {
+                case '.':
+                result[len-1] = '\0';
+                break;
+                case ',':
+                result[len-1] = '\0';
+                break;
+                case ';':
+                result[len-1] = '\0';
+                break;
+                case '?':
+                result[len-1] = '\0';
+                break;
+                default:
+                break;
+            }
+            char *better = lowerString(result);	    
+            first = insertSet(first, better, url);	    
+        }
     }
     return first;
 }
@@ -86,8 +86,8 @@ static char *lowerString(char *given) {
     int len = strlen(given);
     int i = 0;
     while (i < (len)) {
-	given[i] = tolower(given[i]);
-	i++;
-    }
-    return given;
+       given[i] = tolower(given[i]);
+       i++;
+   }
+   return given;
 }

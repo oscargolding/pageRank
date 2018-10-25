@@ -72,34 +72,34 @@ urlL getConnections(void) {
     /* Open for reading */
     FILE *conn = fopen("collection.txt", "r");
     if (conn == NULL) {
-	fprintf(stderr, "Collections not found in present working directoy.\n");
-    }
-    int found = countURLs(conn);
-    if (found == 0) {
-	fprintf(stderr, "The collections file was empty.\n");
-    }
+       fprintf(stderr, "Collections not found in present working directoy.\n");
+   }
+   int found = countURLs(conn);
+   if (found == 0) {
+       fprintf(stderr, "The collections file was empty.\n");
+   }
     /* At this point want to create a handle on the list */
-    urlL handle = malloc(sizeof(urlList));
-    handle->nElem = found;
+   urlL handle = malloc(sizeof(urlList));
+   handle->nElem = found;
     /* Create an array of memory associated */
-    handle->list = malloc(found * sizeof(urlNode));
+   handle->list = malloc(found * sizeof(urlNode));
     /* It's assumed no line is larger than 1000 characters */
-    char foundArr[1000];
-    int i = 0;
-    double setPR = calcInitPR(handle);
-    while (fscanf(conn, "%s", foundArr) != EOF) {
-	handle->list[i].pagerank = setPR;
-	handle->list[i].url = strdup(foundArr);
-	i++;
-    }
-    return handle;
+   char foundArr[1000];
+   int i = 0;
+   double setPR = calcInitPR(handle);
+   while (fscanf(conn, "%s", foundArr) != EOF) {
+       handle->list[i].pagerank = setPR;
+       handle->list[i].url = strdup(foundArr);
+       i++;
+   }
+   return handle;
 }
 
 static int countURLs(FILE *given) {
     char finding[100];
     int found = 0;
     while (fscanf(given, "%s", finding) != EOF) {
-	found++;       
+        found++;       
     }
     /* Reset to the start of the file */
     fseek(given, 0, SEEK_SET);
@@ -108,7 +108,7 @@ static int countURLs(FILE *given) {
 
 char *returnURL(int pos, urlL given) {
     if (pos < 0 || pos > given->nElem) {
-	return NULL;
+        return NULL;
     }
     return given->list[pos].url;
 }
@@ -123,10 +123,10 @@ int findPosUrl(char *url, urlL given) {
     int end = getNoURL(given);
     int i = 0;
     while (i < end) {
-	if (strcmp(url, returnURL(i, given)) == 0) {
-	    return i;
-	}
-	i++;
+       if (strcmp(url, returnURL(i, given)) == 0) {
+           return i;
+       }
+       i++;
     }
     return i;
 }
@@ -169,17 +169,17 @@ static void merge(Node list, int lo, int mid, int hi) {
 
     i = lo; j = mid+1; k = 0;
     while (i <= mid && j <= hi) {
-	if (more(list[i].pagerank,list[j].pagerank))
-	    copy(tmp, &k, list, &i);
-	else
-	    copy(tmp, &k, list, &j);
+       if (more(list[i].pagerank,list[j].pagerank))
+           copy(tmp, &k, list, &i);
+       else
+            copy(tmp, &k, list, &j);
     }
     while (i <= mid) copy(tmp, &k, list, &i);
     while (j <= hi) copy(tmp, &k, list, &j);
 
-    /* Copy back from the temp array */
+     /* Copy back from the temp array */
     for (i = lo, k = 0; i <= hi; i++, k++) {
-	list[i] = tmp[k];
+        list[i] = tmp[k];
     }
     free(tmp);
 }
@@ -200,10 +200,10 @@ static void copy(Node a, int *i, Node b, int *j) {
 void displayList(urlL given) {
     int i = 0;
     while (i < given->nElem) {
-	printf("Pagerank: %.7lf, Outlinks: %d\n", given->list[i].pagerank,
-	       given->list[i].outDegree);
-	i++;
-    }
+        printf("Pagerank: %.7lf, Outlinks: %d\n", given->list[i].pagerank,
+        given->list[i].outDegree);
+        i++;
+   }
 }
 
 /* Write the pageRanks to file */
@@ -211,9 +211,9 @@ void writeToFile(urlL given) {
     FILE *fptr = fopen("pagerankList.txt", "w");
     int i = 0;
     while (i < given->nElem) {
-	fprintf(fptr, "%s, %d, %.7f\n", given->list[i].url,
-		given->list[i].outDegree, given->list[i].pagerank);
-	i++;
+        fprintf(fptr, "%s, %d, %.7f\n", given->list[i].url,
+        given->list[i].outDegree, given->list[i].pagerank);
+        i++;
     }
     fclose(fptr);
 }
@@ -223,8 +223,8 @@ void writeToFile(urlL given) {
 static int checkIfIn(char *given, char **list, int no) {
     int i = 0;
     while (i < no) {
-	if (strcmp(given, list[i]) == 0) return TRUE;
-	i++;
+        if (strcmp(given, list[i]) == 0) return TRUE;
+        i++;
     }
     return FALSE;
 }
@@ -234,11 +234,11 @@ static int checkIfIn(char *given, char **list, int no) {
 static void checkInside(char *url, urlL handle) {
     int i = 0;
     while (i < handle->index) {
-	if (strcmp(handle->list[i].url, url) == 0) {
-	    handle->list[i].nItems++;
-	    return;
-	}
-	i++;
+       if (strcmp(handle->list[i].url, url) == 0) {
+           handle->list[i].nItems++;
+           return;
+        }
+        i++;
     }
     handle->list[handle->index].url = strdup(url);
     handle->list[handle->index].nItems = 1;
@@ -248,8 +248,8 @@ static void checkInside(char *url, urlL handle) {
 static void clean(urlL given) {
     int i = 0;
     while (i < given->nElem) {
-	given->list[i].url = NULL;
-	i++;
+        given->list[i].url = NULL;
+        i++;
     }
     given->index = 0;
     given->used = 0;
@@ -271,30 +271,29 @@ void findMatchedURLs(char **list, int no) {
     /* The string that will hold results from fgets */
     char foundArr[10000];
     while (fgets(foundArr, 10000, retrieve) != NULL) {
-	char delimiters[3];
-	delimiters[0] = '\n';
-	delimiters[1] = ' ';
-	delimiters[2] = '\0';
-	char *final;
-	char *used;
-	char *holding;
-	int i = 0;
-	char *try = foundArr;
-	while ((used = strsep(&try, delimiters)) != NULL) {
-	    /* Condition to break the separation of the strings */
-	    if (try == NULL) break;
-	    final = strdupa(used);
-	    if (i == 0) {
-		i = 1;
-		holding = strdupa(used);
-		continue;
-	    }
-	    if (checkIfIn(holding, list, no)) {
-		checkInside(final, handle);
-	    }
-	    i++;
-	}
-
+        char delimiters[3];
+        delimiters[0] = '\n';
+        delimiters[1] = ' ';
+        delimiters[2] = '\0';
+        char *final;
+        char *used;
+        char *holding;
+        int i = 0;
+        char *try = foundArr;
+        while ((used = strsep(&try, delimiters)) != NULL) {
+ 	          /* Condition to break the separation of the strings */
+            if (try == NULL) break;
+            final = strdupa(used);
+            if (i == 0) {
+               i = 1;
+               holding = strdupa(used);
+               continue;
+            }
+            if (checkIfIn(holding, list, no)) {
+                checkInside(final, handle);
+            }
+            i++;
+        }
     }
     addPageRanks(handle);    
 }
@@ -309,33 +308,33 @@ void addPageRanks(urlL given) {
     int i = 0;
     int hit = 0;
     while (fscanf(gotten, "%s", foundArr) != EOF) {
-	if (i % 3 == 0) {
-	    int len = strlen(foundArr);
-	    foundArr[len-1] = '\0';
-	    if (checkInsideURL(foundArr, given)) {
-		hit = 1;
-		strcpy(holding, foundArr);
-	    }
-	}
-	if ((i % 3 == 2) && hit == 1) {
-	    int len = strlen(foundArr);
-	    foundArr[len-1] = '\0';
-	    double pageRank = strtod(foundArr, NULL);
-	    insertInside(pageRank, given, holding);
-	    holding[0] = '\0';
-	    hit = 0;
-	}
-	i++;
-    }
-    if (given->index > 0) mergeSortSearch(given->list, 0, given->nElem - 1);
+        if (i % 3 == 0) {
+            int len = strlen(foundArr);
+            foundArr[len-1] = '\0';
+            if (checkInsideURL(foundArr, given)) {
+                hit = 1;
+                strcpy(holding, foundArr);
+            }
+        }
+        if ((i % 3 == 2) && hit == 1) {
+            int len = strlen(foundArr);
+            foundArr[len-1] = '\0';
+            double pageRank = strtod(foundArr, NULL);
+            insertInside(pageRank, given, holding);
+            holding[0] = '\0';
+            hit = 0;
+   }
+   i++;
+}
+if (given->index > 0) mergeSortSearch(given->list, 0, given->nElem - 1);
     printMatchedPage(given);
 }
 
 static int checkInsideURL(char *url, urlL given) {
     int i = 0;
     while (i < given->index) {
-	if (strcmp(given->list[i].url, url) == 0) return TRUE;
-	i++;
+        if (strcmp(given->list[i].url, url) == 0) return TRUE;
+        i++;
     }
     return FALSE;
 }
@@ -344,11 +343,11 @@ static int checkInsideURL(char *url, urlL given) {
 static void insertInside(double pageRank, urlL given, char *url) {
     int i = 0;
     while (i < given->index) {
-	if (strcmp(given->list[i].url, url) == 0) {
-	    given->list[i].pagerank = pageRank;
-	    return;
-	}
-	i++;
+        if (strcmp(given->list[i].url, url) == 0) {
+            given->list[i].pagerank = pageRank;
+            return;
+        }
+        i++;
     }
 }
 
@@ -358,12 +357,8 @@ static void printMatchedPage(urlL handle) {
     int i = 0;
     /* Need to remove some of the commenting around the code block */
     while (i < handle->index && i < 30) {
-	//printf("# Block #\n");
-	printf("%s\n", handle->list[i].url);
-	//printf("%d\n", handle->list[i].nItems);
-	//printf("%lf\n", handle->list[i].pagerank);
-	//printf("# End Block #\n");
-	i++;
+        printf("%s\n", handle->list[i].url);
+        i++;
     }
 }
 
@@ -383,17 +378,17 @@ static void mergeNodes(Node list, int lo, int mid, int hi) {
     Node tmp = malloc(nitems*sizeof(urlNode));
     i = lo; j = mid+1; k = 0;
     while (i <= mid && j <= hi) {
-	if (moreNode(&list[i],&list[j]))
-	    copyNode(tmp, &k, list, &i);
-	else
-	    copyNode(tmp, &k, list, &j);
+        if (moreNode(&list[i],&list[j]))
+            copyNode(tmp, &k, list, &i);
+        else
+            copyNode(tmp, &k, list, &j);
     }
     while (i <= mid) copyNode(tmp, &k, list, &i);
     while (j <= hi) copyNode(tmp, &k, list, &j);
 
     /* Copy back from the temp array */
     for (i = lo, k = 0; i <= hi; i++, k++) {
-	list[i] = tmp[k];
+        list[i] = tmp[k];
     }
     free(tmp);
 }
@@ -403,8 +398,8 @@ static void mergeNodes(Node list, int lo, int mid, int hi) {
 static int moreNode(Node x, Node y) {
     if (x->nItems > y->nItems) return 1;
     if (x->nItems == y->nItems) {
-	if (x->pagerank > y->pagerank) return 1;
-	else return 0;
+        if (x->pagerank > y->pagerank) return 1;
+        else return 0;
     } else return 0;
 }
 

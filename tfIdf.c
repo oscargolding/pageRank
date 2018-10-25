@@ -83,27 +83,27 @@ IDHold createInverse(void) {
     char line[10000];
     /* Read until the end of the file is reached */
     while (fgets(line, 10000, using) != NULL) {
-	char delimiters[3];
-	delimiters[0] = '\n';
-	delimiters[1] = ' ';
-	delimiters[2] = '\0';
-	char *final;
-	char *used;
-	int i = 0;
-	int counter = 0;
-	char *try = line;
-	while ((used = strsep(&try, delimiters)) != NULL) {
-	    /* Simple condition of breaking at the end */
-	    if (try == NULL) {
-		break;
-	    }
-	    if (i == 0) {
-		final = strdup(used);
-		i = 1;
-	    } else counter++;	    
-	}
-	if (counter) new->given = insertSet(new->given, final, counter);
-	line[0] = '\0';
+    char delimiters[3];
+    delimiters[0] = '\n';
+    delimiters[1] = ' ';
+    delimiters[2] = '\0';
+    char *final;
+    char *used;
+    int i = 0;
+    int counter = 0;
+    char *try = line;
+    while ((used = strsep(&try, delimiters)) != NULL) {
+        /* Simple condition of breaking at the end */
+        if (try == NULL) {
+          break;
+        }
+        if (i == 0) {
+            final = strdup(used);
+            i = 1;
+        } else counter++;       
+    }
+    if (counter) new->given = insertSet(new->given, final, counter);
+       line[0] = '\0';
     }
     new->noURLs = countURLs(collect);
     fclose(using);
@@ -126,17 +126,17 @@ tfIdfData populateData(IDHold provided) {
     char foundArr[1000];
     int i = 0;
     while (fscanf(conn, "%s", foundArr) != EOF) {
-	using->list[i].url = strdup(foundArr);
-	using->list[i].file = createTree();
-	using->list[i].elements = 0;
-	using->list[i].tfIdf = 0;
-	using->list[i].found = 0;
-	i++;
+        using->list[i].url = strdup(foundArr);
+        using->list[i].file = createTree();
+        using->list[i].elements = 0;
+        using->list[i].tfIdf = 0;
+        using->list[i].found = 0;
+        i++;
     }
     i = 0;
     while (i < using->nItems) {
-	readingSet(using->list[i].url, &using->list[i]);
-	i++;
+        readingSet(using->list[i].url, &using->list[i]);
+        i++;
     }
     return using;
 }
@@ -159,36 +159,36 @@ static void readingSet(char *url, Freq given) {
     fseek(start, 0, SEEK_SET);
     /* Want to reach the desired position in file to start reading */
     while (fscanf(start, "%s", result) != EOF) {
-	if (strcmp(result, want) == 0) break;
+       if (strcmp(result, want) == 0) break;
     }
     /* At this point can do the required reading of files */
     char *bad = "#end";
     while (fscanf(start, "%s", result) != EOF) {
-	if (strcmp(result, bad) == 0) break;
-	int len = strlen(result);
-	if (len > 0) {
-	    /* Get the last character */
-	    char cha = result[len-1];
-	    switch(cha) {
-	    case '.':
-		result[len-1] = '\0';
-		break;
-	    case ',':
-		result[len-1] = '\0';
-		break;
-	    case ';':
-		result[len-1] = '\0';
-		break;
-	    case '?':
-		result[len-1] = '\0';
-		break;
-	    default:
-		break;
-	    }
-	    char *better = lowerString(result);
-	    given->elements++;
-	    given->file = urlTreeInsert(given->file, better);	    
-	}
+        if (strcmp(result, bad) == 0) break;
+        int len = strlen(result);
+        if (len > 0) {
+            /* Get the last character */
+            char cha = result[len-1];
+            switch(cha) {
+                case '.':
+                result[len-1] = '\0';
+                break;
+                case ',':
+                result[len-1] = '\0';
+                break;
+                case ';':
+                result[len-1] = '\0';
+                break;
+                case '?':
+                result[len-1] = '\0';
+                break;
+                default:
+                break;
+            }
+            char *better = lowerString(result);
+            given->elements++;
+            given->file = urlTreeInsert(given->file, better);       
+        }
     }
 }
 
@@ -198,7 +198,7 @@ static int countURLs(FILE *given) {
     char finding[100];
     int found = 0;
     while (fscanf(given, "%s", finding) != EOF) {
-	found++;       
+       found++;       
     }
     /* Reset to the start of the file */
     fseek(given, 0, SEEK_SET);
@@ -210,8 +210,8 @@ static char *lowerString(char *given) {
     int len = strlen(given);
     int i = 0;
     while (i < (len)) {
-	given[i] = tolower(given[i]);
-	i++;
+        given[i] = tolower(given[i]);
+        i++;
     }
     return given;
 }
@@ -237,7 +237,7 @@ static IDTree newSet(char *url, int found) {
 /* Rotation happens in the right direction */
 static IDTree rightRotation(IDTree n1) {
     if (n1 == NULL || n1->left == NULL) {
-	return n1;
+       return n1;
     }
     IDTree n2 = n1->left;
     n1->left = n2->right;
@@ -249,7 +249,7 @@ static IDTree rightRotation(IDTree n1) {
 /* Rotation happens in the left direction */
 static IDTree leftRotation(IDTree n2) {
     if (n2 == NULL || n2->right == NULL) {
-	return n2;
+       return n2;
     }
     IDTree n1 = n2->right;
     n2->right = n1->left;
@@ -263,10 +263,10 @@ static IDTree leftRotation(IDTree n2) {
 static int treeHeight(IDTree given) {
     if (given == NULL) return 0;
     else {
-	int leftHeight = 1 + treeHeight(given->left);
-	int rightHeight = 1 + treeHeight(given->right);
-	if (leftHeight > rightHeight) return leftHeight;
-	else return rightHeight;					  
+        int leftHeight = 1 + treeHeight(given->left);
+        int rightHeight = 1 + treeHeight(given->right);
+        if (leftHeight > rightHeight) return leftHeight;
+        else return rightHeight;                      
     }
 }
 
@@ -276,32 +276,32 @@ static int treeHeight(IDTree given) {
 static IDTree insertSet(IDTree given, char *word, int count) {
     /* Base case for insertion, when it's NULL */
     if (given == NULL) {
-	return newSet(word, count);
+       return newSet(word, count);
     }
     /* Checking that we've found the word inside the tree*/
     if (strcmp(word, given->word) == 0) {
-	/* When finding the same just return it as per normal */
-	return given;
+       /* When finding the same just return it as per normal */
+       return given;
     }
     if (strcmp(word, given->word) < 0) {
-	given->left = insertSet(given->left, word, count);
+       given->left = insertSet(given->left, word, count);
     } else {
-	given->right = insertSet(given->right, word, count);
+       given->right = insertSet(given->right, word, count);
     }
     int leftHeight = treeHeight(given->left);
     int rightHeight = treeHeight(given->right);
     if ((leftHeight - rightHeight) > 1) {
-	if (strcmp(word, given->word) > 0) {
-	    given->left = leftRotation(given->left);
-	}
-	given = rightRotation(given);
+        if (strcmp(word, given->word) > 0) {
+            given->left = leftRotation(given->left);
+        }
+        given = rightRotation(given);
     } else if ((rightHeight - leftHeight) > 1) {
-	if (strcmp(word, given->word) < 0) {
-	    given->right = rightRotation(given->right);
-	}
-	given = leftRotation(given);
+        if (strcmp(word, given->word) < 0) {
+            given->right = rightRotation(given->right);
+        }
+        given = leftRotation(given);
     }
-    return given;					 
+    return given;                    
 }
 
 /* Another AVL insertion function, except this can respond dynamically to 
@@ -309,33 +309,33 @@ static IDTree insertSet(IDTree given, char *word, int count) {
 static IDTree urlTreeInsert(IDTree given, char *word) {
     /* Base case for insertion, when it's NULL */
     if (given == NULL) {
-	return newSet(word, 1);
+       return newSet(word, 1);
     }
     /* Checking that we've found the word inside the tree*/
     if (strcmp(word, given->word) == 0) {
-	/* When finding the same just return it as per normal */
-	given->count++;
-	return given;
+        /* When finding the same just return it as per normal */
+        given->count++;
+        return given;
     }
     if (strcmp(word, given->word) < 0) {
-	given->left = urlTreeInsert(given->left, word);
+       given->left = urlTreeInsert(given->left, word);
     } else {
-	given->right = urlTreeInsert(given->right, word);
+       given->right = urlTreeInsert(given->right, word);
     }
     int leftHeight = treeHeight(given->left);
     int rightHeight = treeHeight(given->right);
     if ((leftHeight - rightHeight) > 1) {
-	if (strcmp(word, given->word) > 0) {
-	    given->left = leftRotation(given->left);
-	}
-	given = rightRotation(given);
+        if (strcmp(word, given->word) > 0) {
+            given->left = leftRotation(given->left);
+        }
+        given = rightRotation(given);
     } else if ((rightHeight - leftHeight) > 1) {
-	if (strcmp(word, given->word) < 0) {
-	    given->right = rightRotation(given->right);
-	}
-	given = leftRotation(given);
+        if (strcmp(word, given->word) < 0) {
+            given->right = rightRotation(given->right);
+        }
+        given = leftRotation(given);
     }
-    return given;					 
+    return given;                    
 }
 
 /* Given a populated data set, calculate the tf-IDF values for words provided
@@ -343,8 +343,8 @@ static IDTree urlTreeInsert(IDTree given, char *word) {
 void calcTfIdf(char **array, tfIdfData given, IDHold tree, int elem) {
     int i = 0;
     while (i < elem) {
-	calcBased(array[i], given, tree);
-	i++;
+        calcBased(array[i], given, tree);
+        i++;
     }
     i = 0;
     mergeSort(given->list, 0, given->nItems-1);
@@ -355,11 +355,11 @@ void calcTfIdf(char **array, tfIdfData given, IDHold tree, int elem) {
 static int findInTree(IDTree tree, char *given) {
     if (tree == NULL) return 0;
     if (strcmp(tree->word, given) == 0)
-	return tree->count;
+    return tree->count;
     else if (strcmp(tree->word, given) > 0)
-	return findInTree(tree->left, given);
+    return findInTree(tree->left, given);
     else if (strcmp(tree->word, given) < 0)
-	return findInTree(tree->right, given);
+    return findInTree(tree->right, given);
     return 0;
 }
 
@@ -369,20 +369,20 @@ static void calcBased(char *input, tfIdfData provided, IDHold tree) {
     int totN = tree->noURLs;
     if (found == 0 || totN == 0) return;
     else {
-	double frac = (double)totN/(double)found;
-	double idf = log(frac);
-	int i = 0;
-	while (i < provided->nItems) {
-	    int termFreq = findInTree(provided->list[i].file, input);
-	    int docFreq = provided->list[i].elements;
-	    if (termFreq > 0 && docFreq > 0) {
-		double tf = (double)termFreq/(double)docFreq;
-		double tfIdf = tf * idf;
-		provided->list[i].found++;
-		provided->list[i].tfIdf += tfIdf;
-	    }
-	    i++;
-	}
+    double frac = (double)totN/(double)found;
+    double idf = log(frac);
+    int i = 0;
+    while (i < provided->nItems) {
+        int termFreq = findInTree(provided->list[i].file, input);
+        int docFreq = provided->list[i].elements;
+        if (termFreq > 0 && docFreq > 0) {
+            double tf = (double)termFreq/(double)docFreq;
+            double tfIdf = tf * idf;
+            provided->list[i].found++;
+            provided->list[i].tfIdf += tfIdf;
+        }
+        i++;
+    }
     }
 }
 
@@ -403,17 +403,17 @@ static void merge(Freq list, int lo, int mid, int hi) {
     Freq tmp = malloc(nitems*sizeof(tNode));
     i = lo; j = mid+1; k = 0;
     while (i <= mid && j <= hi) {
-	if (more(&list[i],&list[j]))
-	    copy(tmp, &k, list, &i);
-	else
-	    copy(tmp, &k, list, &j);
+        if (more(&list[i],&list[j]))
+            copy(tmp, &k, list, &i);
+        else
+            copy(tmp, &k, list, &j);
     }
     while (i <= mid) copy(tmp, &k, list, &i);
     while (j <= hi) copy(tmp, &k, list, &j);
 
     /* Copy back from the temp array */
     for (i = lo, k = 0; i <= hi; i++, k++) {
-	list[i] = tmp[k];
+       list[i] = tmp[k];
     }
     free(tmp);
 }
@@ -422,8 +422,8 @@ static void merge(Freq list, int lo, int mid, int hi) {
 static int more(Freq x, Freq y) {
     if (x->found > y->found) return 1;
     if (x->found == y->found) {
-	if (x->tfIdf > y->tfIdf) return 1;
-	else return 0;
+    if (x->tfIdf > y->tfIdf) return 1;
+    else return 0;
     } else return 0;
 }
 
@@ -437,13 +437,13 @@ static void copy(Freq a, int *i, Freq b, int *j) {
 void displayOut(tfIdfData given) {
     if (given->nItems == 0) return;
     else {
-	mergeSort(given->list, 0, given->nItems-1);
-	int i = 0;
-	while (i < given->nItems && i < 30) {
-	    if (given->list[i].found == 0) break;
-	    printf("%s %.6f\n", given->list[i].url, given->list[i].tfIdf);
-	    i++;
-	}
+        mergeSort(given->list, 0, given->nItems-1);
+        int i = 0;
+        while (i < given->nItems && i < 30) {
+            if (given->list[i].found == 0) break;
+            printf("%s %.6f\n", given->list[i].url, given->list[i].tfIdf);
+            i++;
+        }
     }
 
 }

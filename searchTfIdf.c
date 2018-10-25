@@ -13,9 +13,9 @@ int main (int argc, char *argv[]) {
     int i = 1;
     int index = 0;
     while (i < argc) {
-	list[index] = strdup(argv[i]);
-	i++;
-	index++;
+        list[index] = strdup(argv[i]);
+        i++;
+        index++;
     }
     IDHold used = createInverse();
     tfIdfData using = populateData(used);

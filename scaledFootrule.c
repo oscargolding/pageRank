@@ -36,6 +36,8 @@ typedef struct fileDescriptorsLL* fileDescriptorNode;
 typedef struct fileDescriptorsLLHead* fileDescriptorHead;
 typedef struct urlTree* urlTree;
 
+#define TRUE 1
+#define FALSE 0
 
 /* Structure of the Matrix */
 typedef struct phNode *Node;
@@ -49,6 +51,8 @@ typedef struct phNode {
     int marked;
     int rowMark;
     int colMark;
+    int noZero;
+    int zMark;
 } phNode;
 
 static void printInFix(urlTree given, int *count);
@@ -61,7 +65,7 @@ static void getArray(urlTree given, char **array, int *i);
 /* Helper functions to create a Matrix for Hungarian and perform operations */
 static Node *createEmptyMatrix(int setSize);
 static Node *calcFootRule(int unionSize, char **Union, urlNode *array,
-              int arraySize);
+  int arraySize);
 static int findPlace(urlNode given, char *word);
 static void printing (Node *given, int unionSize);
 static void minAndSub(Node given, int size);
@@ -79,6 +83,9 @@ static int checkInside(int *array, int size, int pos);
 static int findSize(urlNode given);
 static void crossDownwards(Node *given, int size, int row);
 static Node *copyMatrix(Node *given, int size);
+static int findSmallestCol(Node *given, int size);
+static int findNoZeros(Node *given, int size, int col);
+static int checkZero(double given);
 
 struct listHeader {
     urlNode first;
@@ -129,7 +136,7 @@ typedef struct list {
 } list;
 
 int main (int argc, char *argv[]) {
-    
+
     if(argc < 3) {
         printf("Usage: %s input_rank_file1, input_rank_file2... \n", argv[0]);
         return -1;
@@ -193,7 +200,7 @@ int main (int argc, char *argv[]) {
     printing(a, count);
     printf("Hungarian\n");
     hungarian(a, count, using);
-
+    
     return EXIT_SUCCESS;
 }
 
@@ -240,13 +247,13 @@ urlTree insertURL (char* url, urlTree given) {
         return tree;
     }
     if(strcmp(given->url, url) < 0) {
-         given->left = insertURL(url, given->left);
+       given->left = insertURL(url, given->left);
     }
     else if(strcmp(given->url, url) > 0) {
         given->right = insertURL(url, given->right);
     }
     else {
-        //Aready exists in tree
+            //Aready exists in tree
         return given;
     }
     if(treeDepth(given->left)-treeDepth(given->right) > 1) {
@@ -255,7 +262,7 @@ urlTree insertURL (char* url, urlTree given) {
     }
     else if(treeDepth(given->right)-treeDepth(given->left) > 1) {
         urlTree tmp = rotateLeft(given);
-         
+
         return tmp;
     }
     return given;
@@ -290,6 +297,7 @@ static int treeDepth(urlTree given) {
 static urlTree rotateRight(urlTree n1) {
     if(n1 == NULL || n1->left == NULL) return n1;
     urlTree tmp = n1->left;
+
     n1->left = tmp->right;
     tmp->right = n1;
     return tmp;
@@ -317,7 +325,7 @@ static Node *createEmptyMatrix(int setSize) {
 /* Calculate the footRule and return it organised, this is the set-up of the 
  * matrix with no operations having been performed on it yet  */
 static Node *calcFootRule(int unionSize, char **Union, urlNode *array,
-              int arraySize) {
+  int arraySize) {
     Node *creation = createEmptyMatrix(unionSize);
     int i = 0;
     while (i < unionSize) {
@@ -403,8 +411,9 @@ static void printing (Node *given, int unionSize) {
     while (row < unionSize) {
         int col = 0;
         while (col < unionSize) {
-            printf("(%d, %d) foot: %lf mark: %d ", row, col,
-               given[row][col].foot, given[row][col].marked);
+            printf("(%d, %d) foot: %lf cross: %d assign: %d", row, col,
+             given[row][col].foot, given[row][col].crossedOut,
+             given[row][col].assigned);
             col++;
         }
         row++;
@@ -421,13 +430,21 @@ static void hungarian(Node *given, int size, char **Union) {
         minAndSub(&given[row][0], size);
         row++;
     }
+    printf("Min ROW\n");
+    printing(given, size);
     int col = 0;
     while (col < size) {
         minColSub(given, size, col);
         col++;
     }
+    printf("Min COL\n");
     printing(given, size);
     int *hold = zeroAssignment(given, size);
+    int counter = 0;
+    while (counter < size) {
+        printf("%d\n", hold[counter]);
+        counter++;
+    }
     char *temp[size];
     int i = 0;
     double tot = 0;
@@ -455,6 +472,7 @@ static void minAndSub(Node given, int size) {
     i = 0;
     while (i < size) {
         given[i].foot -= min;
+        if (checkZero(given[i].foot)) given[i].foot = 0;
         i++;
     }
 }
@@ -470,12 +488,11 @@ static void minColSub(Node *given, int size, int col) {
     i = 0;
     while (i < size) {
         given[i][col].foot -= min;
+        if (checkZero(given[i][col].foot)) given[i][col].foot = 0;
         i++;
     }
 }
 
-<<<<<<< HEAD
-=======
 /* NB this is an important part, since after performing operations on a matrix
  * we want to check zero values, due to IEEE float standards we may be close 
  * to zero but not precisely there. Hence,  if a double value is within our 
@@ -485,7 +502,6 @@ static int checkZero(double given) {
     if (fabs(given) < 0.000000005) return TRUE;
     else return FALSE;
 }
->>>>>>> e347ea3ff96b8f63625b6a5e9542be885212fc0b
 
 /* Assign zeros to parts of the matrix. This marks parts of the matrix and 
  * allows for the algorithm to continue onwards using new marked values */
@@ -517,6 +533,8 @@ static int *zeroAssignment(Node *given, int size) {
         findMinAndSubtract(given, size);
         markRows(given, 0, size);
         min = calcMin(given, size);
+        printf("New min %d\n", min);
+        printing(given, size);
     }
     int array[size];
     memset(array, -1, size * sizeof(int));
@@ -527,42 +545,15 @@ static int *zeroAssignment(Node *given, int size) {
 /* Find the correct parts of matrix to allocate inside a list. This finds 
  * the positions within the original matrix that provided the minimum cost */
 static int *findPost(Node *given, int size, int *array) {
-<<<<<<< HEAD
-=======
     int newCol = 0;
     while (newCol < size) {
-	given[0][newCol].noZero = findNoZeros(given, size, newCol);
-	given[0][newCol].zMark = 1;
-	newCol++;
+        given[0][newCol].noZero = findNoZeros(given, size, newCol);
+        given[0][newCol].zMark = 1;
+        newCol++;
     }
     int col = findSmallestCol(given, size);
     int *hold = malloc(size * sizeof(int));
     while (col != -1) {
-	int row = 0;
-	while (row < size) {
-	    if (given[row][col].foot == 0) {
-		if (checkInside(array, size, row) == 1) {
-		    array[row] = row;
-		    hold[col] = row;
-		    break;
-		}
-				
-	    }
-	    row++;
-	}
-	col = findSmallestCol(given, size);
-    }
-    return hold;
-}
-
-/* Find the smallest column, and return it to the parent function. When 
- * there are no cols left return -1 */
-static int findSmallestCol(Node *given, int size) {
->>>>>>> e347ea3ff96b8f63625b6a5e9542be885212fc0b
-    int col = 0;
-    int *hold = malloc(size * sizeof(int));
-    while (col < size) {
-<<<<<<< HEAD
         int row = 0;
         while (row < size) {
             if (given[row][col].foot == 0) {
@@ -571,25 +562,36 @@ static int findSmallestCol(Node *given, int size) {
                     hold[col] = row;
                     break;
                 }
-                    
+                
             }
             row++;
         }
+        col = findSmallestCol(given, size);
+    }
+    return hold;
+}
+
+/* Find the smallest column, and return it to the parent function. When 
+ * there are no cols left return -1 */
+static int findSmallestCol(Node *given, int size) {
+    int col = 0;
+    int hit = -1;
+    int sizeR = -1;
+    int smallestZero;
+    while (col < size) {
+        if ((hit == -1) && given[0][col].zMark == 1) {
+            hit = 1;
+            sizeR = col;
+            smallestZero = given[0][col].noZero;
+        } else if ((hit == 1) && given[0][col].zMark == 1) {
+            if (given[0][col].noZero < smallestZero) {
+                sizeR = col;
+            }
+        }
         col++;
-=======
-	if ((hit == -1) && given[0][col].zMark == 1) {
-	    hit = 1;
-	    sizeR = col;
-	    smallestZero = given[0][col].noZero;
-	} else if ((hit == 1) && given[0][col].zMark == 1) {
-	    if (given[0][col].noZero < smallestZero) {
-		sizeR = col;
-	    }
-	}
-	col++;
     }
     if (hit != -1) {
-	given[0][sizeR].zMark = 0;
+        given[0][sizeR].zMark = 0;
     }
     return sizeR;
 }
@@ -600,11 +602,10 @@ static int findNoZeros(Node *given, int size, int col) {
     int num = 0;
     int row = 0;
     while (row < size) {
-	if (given[row][col].foot == 0) num++;
-	row++;
->>>>>>> e347ea3ff96b8f63625b6a5e9542be885212fc0b
+        if (given[row][col].foot == 0) num++;
+        row++;
     }
-    return hold;
+    return num;
 }
 
 /* Check inside a list to see whether position is present or not */
@@ -623,7 +624,7 @@ static int checkInside(int *array, int size, int pos) {
 static void crossDownwards(Node *given, int size, int col) {
     int i = 0;
     while (i < size) {
-        if (given[i][col].foot == 0) {
+        if (given[i][col].foot == 0 && given[i][col].assigned != 1) {
             given[i][col].crossedOut = 1;
         }
         i++;
@@ -684,6 +685,9 @@ static void markRowAcross(Node *given, int size, int row) {
     }
     given[row][0].rowMark = 1;
     while (i < size) {
+        if (given[row][i].foot == 0) {
+            markCol(given, size, i);
+        }
         i++;
     }
 }
@@ -695,28 +699,28 @@ static int calcMin(Node *given, int size) {
     int col = 0;
     int min = 0;
     while (col < size) {
-    if (given[0][col].colMark == 1) {
-        int row = 0;
-        while (row < size) {
-            given[row][col].marked++;
-            row++;
+        if (given[0][col].colMark == 1) {
+            int row = 0;
+            while (row < size) {
+                given[row][col].marked++;
+                row++;
+            }
+            min +=1;
         }
-        min +=1;
-    }
-    col++;
+        col++;
     }
     /* After col Mark */
     int row = 0;
     while (row < size) {
-    if (given[row][0].rowMark != 1) {
-        int col = 0;
-        while (col < size) {
-            given[row][col].marked++;
-            col++;
+        if (given[row][0].rowMark != 1) {
+            int col = 0;
+            while (col < size) {
+                given[row][col].marked++;
+                col++;
+            }
+            min +=1;
         }
-        min +=1;
-    }
-    row++;
+        row++;
     }
     return min;
 }
@@ -750,6 +754,7 @@ static void findMinAndSubtract(Node *given, int size) {
         while (col < size) {
             if (given[row][col].marked == 0) {
                 given[row][col].foot -= hit;
+                if (checkZero(given[row][col].foot)) given[row][col].foot = 0;
             } else if (given[row][col].marked == 2) {
                 given[row][col].foot += hit;
             }
@@ -760,17 +765,16 @@ static void findMinAndSubtract(Node *given, int size) {
     /* This process resets the matrix to correct values */
     row = 0;
     while (row < size) {
-    int col = 0;
-    while (col < size) {
-        given[row][col].marked = 0;
-        given[row][col].colMark = 0;
-        given[row][col].rowMark = 0;
-        given[row][col].assigned = 0;
-        given[row][col].crossedOut = 0;
-        col++;
-    }
-    row++;
+        int col = 0;
+        while (col < size) {
+            given[row][col].marked = 0;
+            given[row][col].colMark = 0;
+            given[row][col].rowMark = 0;
+            given[row][col].assigned = 0;
+            given[row][col].crossedOut = 0;
+            col++;
+        }
+        row++;
     }
     
 }
-

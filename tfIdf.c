@@ -70,7 +70,7 @@ IDHold createInverse(void) {
     IDHold new = malloc(sizeof(invDoc));
     new->noURLs = 0;
     new->given = createTree();
-    FILE *using = fopen("invertedIndexTest.txt", "r");
+    FILE *using = fopen("invertedIndex.txt", "r");
     if (!using) perror("Failed to open invertedIndex.txt\n");
     FILE *collect = fopen("collection.txt", "r");
     if (!collect) perror("Failed to open collection.txt\n");
@@ -386,7 +386,7 @@ static void calcBased(char *input, tfIdfData provided, IDHold tree) {
     if (found == 0 || totN == 0) return;
     else {
 	double frac = (double)totN/(double)found;
-	double idf = log(frac);
+	double idf = log10(frac);
 	int i = 0;
 	while (i < provided->nItems) {
 	    int termFreq = findInTree(provided->list[i].file, input);
